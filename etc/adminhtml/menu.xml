@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../../Magento/Backend/etc/menu.xsd">
+    <menu>
+        <add id="GhoSter_AutoInstagramPost::auto_instagram_post" title="Auto Instagram Settings" module="GhoSter_AutoInstagramPost" sortOrder="150" resource="GhoSter_AutoInstagramPost::auto_instagram_post" parent="GhoSter_Core::ghoster"/>
+        <add id="GhoSter_AutoInstagramPost::config" title="Configuration" module="GhoSter_AutoInstagramPost" parent="GhoSter_AutoInstagramPost::auto_instagram_post" sortOrder="10" action="adminhtml/system_config/edit/section/auto_instagram_post" resource="GhoSter_AutoInstagramPost::config"/>
+    </menu>
+</config>

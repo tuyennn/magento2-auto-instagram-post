@@ -1,0 +1,88 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <system>
+        <section id="auto_instagram_post" showInDefault="1">
+            <tab>ghoster</tab>
+            <label>Auto Instagram Post</label>
+            <resource>GhoSter_AutoInstagramPost::config</resource>
+            <group id="general" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="0">
+                <label>General Settings</label>
+                <field id="enable" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Enable Auto Instagram</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="username" translate="label" type="text" sortOrder="15" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Username(Instagram Account)</label>
+                    <frontend_class>required-entry</frontend_class>
+                    <depends>
+                        <field id="enable">1</field>
+                    </depends>
+                </field>
+                <field id="password" translate="label" type="password" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Password</label>
+                    <frontend_class>required-entry</frontend_class>
+                    <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
+                    <depends>
+                        <field id="enable">1</field>
+                    </depends>
+                </field>
+                <field id="upload_image_id" translate="label comment" type="image" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Default Image</label>
+                    <backend_model>GhoSter\AutoInstagramPost\Model\Config\Backend\Image</backend_model>
+                    <base_url type="media" scope_info="1">instagram</base_url>
+                    <comment><![CDATA[Default Image will be uploaded when product have no Image available. Recommended 800x800 px]]></comment>
+                    <depends>
+                        <field id="enable">1</field>
+                    </depends>
+                </field>
+            </group>
+            <group id="comment_hashtag" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="0" showInStore="0">
+                <label>Comment and Hashtag Settings</label>
+                <field id="enable" translate="label" type="select" sortOrder="0" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Enable Auto Hashtag and Description on Insgram Post</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="product_description" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Enable Auto Product Description as Instagram Post Description</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[Description on Instagram Post should be generated from product description]]></comment>
+                    <depends>
+                        <field id="enable">1</field>
+                    </depends>
+                </field>
+                <field id="category_hashtag" translate="label" type="select" sortOrder="20" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Enable Auto Categories Name as Hashtag</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[Hashtag on Instagram Post should be generated from categories which product belongs]]></comment>
+                    <depends>
+                        <field id="enable">1</field>
+                    </depends>
+                </field>
+                <field id="enable_custom" translate="label" type="select" sortOrder="20" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Enable Custom Hashtag</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <depends>
+                        <field id="enable">1</field>
+                    </depends>
+                </field>
+                <field id="hashtag" translate="label" sortOrder="30" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Custom Hashtag</label>
+                    <frontend_model>GhoSter\AutoInstagramPost\Block\Adminhtml\System\Config\Hashtag</frontend_model>
+                    <backend_model>GhoSter\AutoInstagramPost\Model\Config\Backend\Hashtag</backend_model>
+                    <comment><![CDATA[Hashtag on Instagram Post should include these custom, no need to add # before hashtag, value should be stripped and remove spaces]]></comment>
+                    <depends>
+                        <field id="enable">1</field>
+                        <field id="enable_custom">1</field>
+                    </depends>
+                </field>
+                <field id="description_template" translate="label" type="textarea" sortOrder="50" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Instagram Post Description Template</label>
+                    <comment><![CDATA[{{CUSTOMHASTAG}} {{CATEGORYHASHTAG}} {{PRODUCTDESC}} {{PRODUCTNAME}}</br>Instagram caption character limit: 2,200 characters</br>Instagram hashtag limit: 30 hashtags</br>Instagram bio character limit: 150 characters]]></comment>
+                    <depends>
+                        <field id="enable">1</field>
+                    </depends>
+                </field>
+            </group>
+        </section>
+    </system>
+</config>
