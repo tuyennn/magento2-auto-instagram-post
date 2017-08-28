@@ -103,9 +103,9 @@ class ProductSaveAfter implements ObserverInterface
             $account = $this->account;
             $instagram = $this->instagram;
 
-            if ($product->getImage() != 'no_selection') {
+            if ($product->getImage() !== 'no_selection') {
                 $baseImage = $product->getImage();
-            } elseif ($product->getSmallImage() != 'no_selection') {
+            } elseif ($product->getSmallImage() !== 'no_selection') {
                 $baseImage = $product->getSmallImage();
             } else {
                 $baseImage = $product->getThumbnail();
@@ -118,7 +118,7 @@ class ProductSaveAfter implements ObserverInterface
             // Check and process exist image size
             if ($baseImage) {
                 $imageDir = $baseDir . $baseImage;
-                if (strpos($baseImage, '.tmp')) {
+                if (strpos($baseImage, '.tmp') !== false) {
                     $baseImage = str_replace('.tmp', '', $baseImage);
                     $imageDir = str_replace('media', 'media' . DIRECTORY_SEPARATOR . 'tmp', $baseDir) . $baseImage;
                 }
@@ -158,7 +158,7 @@ class ProductSaveAfter implements ObserverInterface
 
                     $result = $instagram->uploadPhoto($image, $caption);
 
-                    if ($result['status'] == 'ok') {
+                    if ($result['status'] === 'ok') {
                         $product->setData('posted_to_instagram', 1);
 
                         $productRepositoryFactory = $this->_objectManager->create('Magento\Catalog\Api\ProductRepositoryInterface');
@@ -166,7 +166,7 @@ class ProductSaveAfter implements ObserverInterface
                         $this->messageManager->addSuccessMessage(__('The product has been posted to https://www.instagram.com/p/' . $result['media']['code']));
                     }
 
-                    if ($result['status'] == 'fail') {
+                    if ($result['status'] === 'fail') {
 
                         $this->messageManager->addErrorMessage(__($result['message'] . '. Please check product\'s images again, https://help.instagram.com/1631821640426723'));
                     }

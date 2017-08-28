@@ -25,6 +25,8 @@ class Instagram
     protected $IGDataPath;          // Data storage path
     protected $directory_list;
     protected $helper;
+    protected $logger;
+
 
 
     /**
@@ -35,14 +37,17 @@ class Instagram
      *  Default folder to store data, you can change it.
      *
      * @param \Magento\Framework\App\Filesystem\DirectoryList $directory_list
+     * @param \Psr\Log\LoggerInterface $logger
      * @param array $data
      */
     public function __construct(
         \Magento\Framework\App\Filesystem\DirectoryList $directory_list,
         Helper $helper,
+        LoggerInterface $logger,
         array $data = []
     )
     {
+        $this->logger = $logger;
         $this->helper = $helper;
 
         if ($this->helper->isModuleEnabled()) {
@@ -90,6 +95,7 @@ class Instagram
      *
      * @return array
      *    Login data
+     * @throws \Exception
      */
     public function login($force = false)
     {
@@ -109,8 +115,8 @@ class Instagram
 
             $login = $this->request('accounts/login/', $this->generateSignature(json_encode($data)), true);
 
-            if ($login[1]['status'] == 'fail') {
-                throw new InstagramException($login[1]['message']);
+            if ($login[1]['status'] === 'fail') {
+                throw new \Exception($login[1]['message']);
 
                 return;
             }
@@ -133,7 +139,7 @@ class Instagram
         }
 
         $check = $this->timelineFeed();
-        if (isset($check['message']) && $check['message'] == 'login_required') {
+        if (isset($check['message']) && $check['message'] === 'login_required') {
             $this->login(true);
         }
         $this->getv2Inbox();
@@ -191,7 +197,7 @@ class Instagram
     {
         $logout = $this->request('accounts/logout/');
 
-        if ($logout == 'ok') {
+        if ($logout === 'ok') {
             return true;
         } else {
             return false;
@@ -208,6 +214,7 @@ class Instagram
      *
      * @return array
      *               Upload data
+     * @throws \Exception
      */
     public function uploadPhoto($photo, $caption = null, $upload_id = null)
     {
@@ -287,14 +294,14 @@ class Instagram
 
         curl_close($ch);
 
-        if ($upload['status'] == 'fail') {
-            throw new InstagramException($upload['message']);
+        if ($upload['status'] === 'fail') {
+            throw new \Exception($upload['message']);
 
             return;
         }
 
         if ($this->debug) {
-            echo 'RESPONSE: ' . substr($resp, $header_len) . "\n\n";
+            $this->logger->critical('RESPONSE: ' . substr($resp, $header_len) . "\n\n");
         }
 
         $configure = $this->configure($upload['upload_id'], $photo, $caption);
@@ -411,14 +418,15 @@ class Instagram
 
         curl_close($ch);
 
-        if ($upload['status'] == 'fail') {
-            throw new InstagramException($upload['message']);
+        if ($upload['status'] === 'fail') {
+            throw new \Exception($upload['message']);
 
             return;
         }
 
         if ($this->debug) {
-            echo 'RESPONSE: ' . substr($resp, $header_len) . "\n\n";
+            $this->logger->critical('RESPONSE: ' . substr($resp, $header_len) . "\n\n");
+
         }
 
         $configure = $this->configureVideo($upload_id, $video, $caption);
@@ -718,7 +726,7 @@ class Instagram
     public function changeProfilePicture($photo)
     {
         if (is_null($photo)) {
-            echo "Photo not valid\n\n";
+            $this->logger->critical("Photo not valid\n\n");
 
             return;
         }
@@ -920,13 +928,14 @@ class Instagram
      *
      * @return array
      *   Recent activity data
+     * @throws \Exception
      */
     public function getRecentActivity()
     {
         $activity = $this->request('news/inbox/?')[1];
 
-        if ($activity['status'] != 'ok') {
-            throw new InstagramException($activity['message'] . "\n");
+        if ($activity['status'] !== 'ok') {
+            throw new \Exception($activity['message'] . "\n");
 
             return;
         }
@@ -939,13 +948,14 @@ class Instagram
      *
      * @return array
      *   Recent activity data of follows
+     * @throws \Exception
      */
     public function getFollowingRecentActivity()
     {
         $activity = $this->request('news/?')[1];
 
-        if ($activity['status'] != 'ok') {
-            throw new InstagramException($activity['message'] . "\n");
+        if ($activity['status'] !== 'ok') {
+            throw new \Exception($activity['message'] . "\n");
 
             return;
         }
@@ -958,13 +968,14 @@ class Instagram
      *
      * @return array
      *   v2 inbox data
+     * @throws \Exception
      */
     public function getv2Inbox()
     {
         $inbox = $this->request('direct_v2/inbox/?')[1];
 
-        if ($inbox['status'] != 'ok') {
-            throw new InstagramException($inbox['message'] . "\n");
+        if ($inbox['status'] !== 'ok') {
+            throw new \Exception($inbox['message'] . "\n");
 
             return;
         }
@@ -979,13 +990,14 @@ class Instagram
      *
      * @return array
      *   user tags data
+     * @throws \Exception
      */
     public function getUserTags($usernameId)
     {
         $tags = $this->request("usertags/$usernameId/feed/?rank_token=$this->rank_token&ranked_content=true&")[1];
 
-        if ($tags['status'] != 'ok') {
-            throw new InstagramException($tags['message'] . "\n");
+        if ($tags['status'] !== 'ok') {
+            throw new \Exception($tags['message'] . "\n");
 
             return;
         }
@@ -1010,13 +1022,15 @@ class Instagram
      * @param string $tag
      *
      * @return array
+     * @throws \Exception
      */
+
     public function tagFeed($tag)
     {
         $userFeed = $this->request("feed/tag/$tag/?rank_token=$this->rank_token&ranked_content=true&")[1];
 
-        if ($userFeed['status'] != 'ok') {
-            throw new InstagramException($userFeed['message'] . "\n");
+        if ($userFeed['status'] !== 'ok') {
+            throw new \Exception($userFeed['message'] . "\n");
 
             return;
         }
@@ -1030,12 +1044,13 @@ class Instagram
      * @param string $mediaId
      *
      * @return array
+     * @throws \Exception
      */
     public function getMediaLikers($mediaId)
     {
         $likers = $this->request("media/$mediaId/likers/?")[1];
-        if ($likers['status'] != 'ok') {
-            throw new InstagramException($likers['message'] . "\n");
+        if ($likers['status'] !== 'ok') {
+            throw new \Exception($likers['message'] . "\n");
 
             return;
         }
@@ -1051,13 +1066,14 @@ class Instagram
      *
      * @return array
      *   Geo Media data
+     * @throws \Exception
      */
     public function getGeoMedia($usernameId)
     {
         $locations = $this->request("maps/user/$usernameId/")[1];
 
-        if ($locations['status'] != 'ok') {
-            throw new InstagramException($locations['message'] . "\n");
+        if ($locations['status'] !== 'ok') {
+            throw new \Exception($locations['message'] . "\n");
 
             return;
         }
@@ -1083,14 +1099,15 @@ class Instagram
      *
      * @return array
      *   query data
+     * @throws \Exception
      */
     public function fbUserSearch($query)
     {
         $query = rawurlencode($query);
         $query = $this->request("fbsearch/topsearch/?context=blended&query=$query&rank_token=$this->rank_token")[1];
 
-        if ($query['status'] != 'ok') {
-            throw new InstagramException($query['message'] . "\n");
+        if ($query['status'] !== 'ok') {
+            throw new \Exception($query['message'] . "\n");
 
             return;
         }
@@ -1105,13 +1122,14 @@ class Instagram
      *
      * @return array
      *   query data
+     * @throws \Exception
      */
     public function searchUsers($query)
     {
         $query = $this->request('users/search/?ig_sig_key_version=' . self::SIG_KEY_VERSION . "&is_typeahead=true&query=$query&rank_token=$this->rank_token")[1];
 
-        if ($query['status'] != 'ok') {
-            throw new InstagramException($query['message'] . "\n");
+        if ($query['status'] !== 'ok') {
+            throw new \Exception($query['message'] . "\n");
 
             return;
         }
@@ -1126,14 +1144,15 @@ class Instagram
      *
      * @return array
      *   query data
+     * @throws \Exception
      *
      */
     public function searchUsername($usernameName)
     {
         $query = $this->request("users/$usernameName/usernameinfo/")[1];
 
-        if ($query['status'] != 'ok') {
-            throw new InstagramException($query['message'] . "\n");
+        if ($query['status'] !== 'ok') {
+            throw new \Exception($query['message'] . "\n");
 
             return;
         }
@@ -1163,13 +1182,14 @@ class Instagram
      *
      * @return array
      *   query data
+     * @throws \Exception
      */
     public function searchTags($query)
     {
         $query = $this->request("tags/search/?is_typeahead=true&q=$query&rank_token=$this->rank_token")[1];
 
-        if ($query['status'] != 'ok') {
-            throw new InstagramException($query['message'] . "\n");
+        if ($query['status'] !== 'ok') {
+            throw new \Exception($query['message'] . "\n");
 
             return;
         }
@@ -1182,6 +1202,7 @@ class Instagram
      *
      * @return array
      *   timeline data
+     * @throws \Exception
      */
     public function getTimeline($maxid = null)
     {
@@ -1190,8 +1211,8 @@ class Instagram
             . (!is_null($maxid) ? "&max_id=" . $maxid : '')
         )[1];
 
-        if ($timeline['status'] != 'ok') {
-            throw new InstagramException($timeline['message'] . "\n");
+        if ($timeline['status'] !== 'ok') {
+            throw new \Exception($timeline['message'] . "\n");
 
             return;
         }
@@ -1209,7 +1230,7 @@ class Instagram
      *    Min timestamp
      * @return array User feed data
      *    User feed data
-     * @throws InstagramException
+     * @throws \Exception
      */
     public function getUserFeed($usernameId, $maxid = null, $minTimestamp = null)
     {
@@ -1220,8 +1241,8 @@ class Instagram
             . "&ranked_content=true"
         )[1];
 
-        if ($userFeed['status'] != 'ok') {
-            throw new InstagramException($userFeed['message'] . "\n");
+        if ($userFeed['status'] !== 'ok') {
+            throw new \Exception($userFeed['message'] . "\n");
 
             return;
         }
@@ -1237,6 +1258,7 @@ class Instagram
      *
      * @return array
      *   Hashtag feed data
+     * @throws \Exception
      */
     public function getHashtagFeed($hashtagString, $maxid = null)
     {
@@ -1248,8 +1270,8 @@ class Instagram
 
         $hashtagFeed = $this->request($endpoint)[1];
 
-        if ($hashtagFeed['status'] != 'ok') {
-            throw new InstagramException($hashtagFeed['message'] . "\n");
+        if ($hashtagFeed['status'] !== 'ok') {
+            throw new \Exception($hashtagFeed['message'] . "\n");
 
             return;
         }
@@ -1265,6 +1287,7 @@ class Instagram
      *
      * @return array
      *   Location location data
+     * @throws \Exception
      */
     public function searchLocation($query)
     {
@@ -1273,8 +1296,8 @@ class Instagram
 
         $locationFeed = $this->request($endpoint)[1];
 
-        if ($locationFeed['status'] != 'ok') {
-            throw new InstagramException($locationFeed['message'] . "\n");
+        if ($locationFeed['status'] !== 'ok') {
+            throw new \Exception($locationFeed['message'] . "\n");
 
             return;
         }
@@ -1290,6 +1313,7 @@ class Instagram
      *
      * @return array
      *   Location feed data
+     * @throws \Exception
      */
     public function getLocationFeed($locationId, $maxid = null)
     {
@@ -1301,8 +1325,8 @@ class Instagram
 
         $locationFeed = $this->request($endpoint)[1];
 
-        if ($locationFeed['status'] != 'ok') {
-            throw new InstagramException($locationFeed['message'] . "\n");
+        if ($locationFeed['status'] !== 'ok') {
+            throw new \Exception($locationFeed['message'] . "\n");
 
             return;
         }
@@ -1326,13 +1350,14 @@ class Instagram
      *
      * @return array
      *   popular feed data
+     * @throws \Exception
      */
     public function getPopularFeed()
     {
         $popularFeed = $this->request("feed/popular/?people_teaser_supported=1&rank_token=$this->rank_token&ranked_content=true&")[1];
 
-        if ($popularFeed['status'] != 'ok') {
-            throw new InstagramException($popularFeed['message'] . "\n");
+        if ($popularFeed['status'] !== 'ok') {
+            throw new \Exception($popularFeed['message'] . "\n");
 
             return;
         }
@@ -1658,7 +1683,7 @@ class Instagram
     protected function request($endpoint, $post = null, $login = false)
     {
         if (!$this->isLoggedIn && !$login) {
-            throw new InstagramException("Not logged in\n");
+            throw new \Exception("Not logged in\n");
 
             return;
         }
@@ -1698,13 +1723,14 @@ class Instagram
         curl_close($ch);
 
         if ($this->debug) {
-            echo "REQUEST: $endpoint\n";
+            $this->logger->critical("REQUEST: $endpoint\n");
             if (!is_null($post)) {
                 if (!is_array($post)) {
-                    echo 'DATA: ' . urldecode($post) . "\n";
+                    $this->logger->critical('DATA: ' . urldecode($post) . "\n");
+
                 }
             }
-            echo "RESPONSE: $body\n\n";
+            $this->logger->critical("RESPONSE: $body\n\n");
         }
 
         return [$header, json_decode($body, true)];
