@@ -1,7 +1,7 @@
 <?php
 
 namespace GhoSter\AutoInstagramPost\Model;
-use GhoSter\AutoInstagramPost\Helper\Data as Helper;
+
 
 
 class Instagram
@@ -37,13 +37,14 @@ class Instagram
      *  Default folder to store data, you can change it.
      *
      * @param \Magento\Framework\App\Filesystem\DirectoryList $directory_list
+     * @param \GhoSter\AutoInstagramPost\Helper\Data $helper
      * @param \Psr\Log\LoggerInterface $logger
      * @param array $data
      */
     public function __construct(
         \Magento\Framework\App\Filesystem\DirectoryList $directory_list,
-        Helper $helper,
-        LoggerInterface $logger,
+        \GhoSter\AutoInstagramPost\Helper\Data $helper,
+        \Psr\Log\LoggerInterface $logger,
         array $data = []
     )
     {

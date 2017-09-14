@@ -3,7 +3,6 @@
 namespace GhoSter\AutoInstagramPost\Observer\Catalog;
 
 use Magento\Framework\Event\ObserverInterface;
-use Psr\Log\LoggerInterface;
 use GhoSter\AutoInstagramPost\Helper\Data as AutoPostHelper;
 use GhoSter\AutoInstagramPost\Model\Instagram;
 
@@ -41,7 +40,6 @@ class ProductSaveAfter implements ObserverInterface
     /**
      * ProductSaveAfter constructor.
      * @param \Magento\Framework\App\Action\Context $context
-     * @param \Magento\Framework\ObjectManagerInterface $objectManager
      * @param \GhoSter\AutoInstagramPost\Helper\Data $helper
      * @param \GhoSter\AutoInstagramPost\Model\Instagram $instagram
      * @param \Psr\Log\LoggerInterface $logger
@@ -51,17 +49,15 @@ class ProductSaveAfter implements ObserverInterface
      */
     public function __construct(
         \Magento\Framework\App\Action\Context $context,
-        \Magento\Framework\ObjectManagerInterface $objectManager,
         AutoPostHelper $helper,
         Instagram $instagram,
-        LoggerInterface $logger,
+        \Psr\Log\LoggerInterface $logger,
         \Magento\Framework\App\Filesystem\DirectoryList $directory_list,
         \Magento\Catalog\Api\ProductRepositoryInterfaceFactory $productRepositoryFactory,
         \Magento\Framework\Json\Helper\Data $jsonHelper
 
     )
     {
-        $this->_objectManager = $objectManager;
         $this->helper = $helper;
         $this->instagram = $instagram;
         $this->logger = $logger;
