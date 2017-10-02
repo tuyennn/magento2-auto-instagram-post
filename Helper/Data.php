@@ -108,7 +108,11 @@ class Data extends AbstractHelper
     public function getResizeImage($imageDir, $image = null, $width, $height = null, $quality = 100)
     {
 
-        $imageResized = $this->directory_list->getPath('media') . DIRECTORY_SEPARATOR . 'catalog' . DIRECTORY_SEPARATOR . 'product' . DIRECTORY_SEPARATOR . 'product_resized' . DIRECTORY_SEPARATOR . $width . 'x' . $height;
+        if($height) {
+            $imageResized = $this->directory_list->getPath('media') . DIRECTORY_SEPARATOR . 'catalog' . DIRECTORY_SEPARATOR . 'product' . DIRECTORY_SEPARATOR . 'product_resized' . DIRECTORY_SEPARATOR . $width . 'x' . $height . $image;
+        } else {
+            $imageResized = $this->directory_list->getPath('media') . DIRECTORY_SEPARATOR . 'catalog' . DIRECTORY_SEPARATOR . 'product' . DIRECTORY_SEPARATOR . 'product_resized' . DIRECTORY_SEPARATOR . $width . $image;
+        }
         if (!file_exists($imageResized)):
             $imageObj = $this->_imageFactory->create();
             $imageObj->open($imageDir);

@@ -30,7 +30,7 @@ class Item extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb {
      *
      * @return void
      */
-    protected function _construct()
+    public function _construct()
     {
         $this->_init('ghoster_instagram_auto_post', 'id');
     }

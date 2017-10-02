@@ -3,8 +3,6 @@
 namespace GhoSter\AutoInstagramPost\Observer\Catalog;
 
 use Magento\Framework\Event\ObserverInterface;
-use GhoSter\AutoInstagramPost\Helper\Data as AutoPostHelper;
-use GhoSter\AutoInstagramPost\Model\Instagram;
 
 class ProductSaveAfter implements ObserverInterface
 {
@@ -14,59 +12,90 @@ class ProductSaveAfter implements ObserverInterface
      */
     protected $_objectManager;
 
-    protected $helper;
+    /**
+     * @var \GhoSter\AutoInstagramPost\Helper\Data
+     */
+    protected $_helper;
 
-    private $logger;
+    /**
+     * @var \Psr\Log\LoggerInterface
+     */
+    private $_logger;
 
     /**
      * @var \Magento\Framework\Message\ManagerInterface
      */
-    protected $messageManager;
+    protected $_messageManager;
 
-    protected $account;
+    protected $_account;
 
-    protected $instagram;
+    /**
+     * @var \GhoSter\AutoInstagramPost\Model\Item
+     */
+    protected $_item;
 
-    protected $directory_list;
+    /**
+     * @var \GhoSter\AutoInstagramPost\Model\Instagram
+     */
+    protected $_instagram;
 
-    protected $_productRepositoryFactory;
+    /**
+     * @var \Magento\Framework\App\Filesystem\DirectoryList
+     */
+    protected $_directory_list;
 
     /**
      * @var \Magento\Framework\Json\Helper\Data
      */
-    protected $jsonHelper;
+    protected $_jsonHelper;
 
+    /**
+     * @var \Magento\Catalog\Model\ResourceModel\Product\Action
+     */
+    protected $_action;
+
+    /**
+     * Store manager
+     *
+     * @var \Magento\Store\Model\StoreManagerInterface
+     */
+    protected $_storeManager;
 
     /**
      * ProductSaveAfter constructor.
      * @param \Magento\Framework\App\Action\Context $context
      * @param \GhoSter\AutoInstagramPost\Helper\Data $helper
      * @param \GhoSter\AutoInstagramPost\Model\Instagram $instagram
+     * @param \GhoSter\AutoInstagramPost\Model\Item $item
      * @param \Psr\Log\LoggerInterface $logger
      * @param \Magento\Framework\App\Filesystem\DirectoryList $directory_list
-     * @param \Magento\Catalog\Api\ProductRepositoryInterfaceFactory $productRepositoryFactory
      * @param \Magento\Framework\Json\Helper\Data $jsonHelper
      */
     public function __construct(
         \Magento\Framework\App\Action\Context $context,
-        AutoPostHelper $helper,
-        Instagram $instagram,
+        \Magento\Framework\ObjectManagerInterface $objectManager,
+        \GhoSter\AutoInstagramPost\Helper\Data $helper,
+        \GhoSter\AutoInstagramPost\Model\Instagram $instagram,
+        \GhoSter\AutoInstagramPost\Model\Item $item,
         \Psr\Log\LoggerInterface $logger,
         \Magento\Framework\App\Filesystem\DirectoryList $directory_list,
-        \Magento\Catalog\Api\ProductRepositoryInterfaceFactory $productRepositoryFactory,
-        \Magento\Framework\Json\Helper\Data $jsonHelper
+        \Magento\Framework\Json\Helper\Data $jsonHelper,
+        \Magento\Store\Model\StoreManagerInterface $storeManager,
+        \Magento\Catalog\Model\ResourceModel\Product\Action $action
 
     )
     {
-        $this->helper = $helper;
-        $this->instagram = $instagram;
-        $this->logger = $logger;
-        $this->directory_list = $directory_list;
-        $this->_productRepositoryFactory = $productRepositoryFactory;
-        $this->jsonHelper = $jsonHelper;
+        $this->_objectManager = $objectManager;
+        $this->_helper = $helper;
+        $this->_instagram = $instagram;
+        $this->_logger = $logger;
+        $this->_directory_list = $directory_list;
+        $this->_jsonHelper = $jsonHelper;
 
-        $this->account = $this->helper->getAccountInformation();
-        $this->messageManager = $context->getMessageManager();
+        $this->_account = $this->_helper->getAccountInformation();
+        $this->_messageManager = $context->getMessageManager();
+        $this->_storeManager = $storeManager;
+        $this->_action = $action;
 
     }
 
@@ -82,7 +111,9 @@ class ProductSaveAfter implements ObserverInterface
     )
     {
 
-        if (!$this->helper->isModuleEnabled()) {
+        $currentStore = $this->_storeManager->getStore();
+
+        if (!$this->_helper->isModuleEnabled()) {
             return;
         }
 
@@ -94,10 +125,10 @@ class ProductSaveAfter implements ObserverInterface
 
         if (!$product->getData('posted_to_instagram')) {
             $image = '';
-            $baseDir = $this->directory_list->getPath('media') . DIRECTORY_SEPARATOR . 'catalog' . DIRECTORY_SEPARATOR . 'product';
+            $baseDir = $this->_directory_list->getPath('media') . DIRECTORY_SEPARATOR . 'catalog' . DIRECTORY_SEPARATOR . 'product';
 
-            $account = $this->account;
-            $instagram = $this->instagram;
+            $account = $this->_account;
+            $instagram = $this->_instagram;
 
             if ($product->getImage() !== 'no_selection') {
                 $baseImage = $product->getImage();
@@ -108,7 +139,7 @@ class ProductSaveAfter implements ObserverInterface
             }
 
             if (!$baseImage) {
-                $image = $this->helper->getDefaultImage();
+                $image = $this->_helper->getDefaultImage();
             }
 
             // Check and process exist image size
@@ -128,7 +159,7 @@ class ProductSaveAfter implements ObserverInterface
                         $imageSize = 800;
                     }
 
-                    $image = $this->helper->getResizeImage($imageDir, $baseImage, $imageSize);
+                    $image = $this->_helper->getResizeImage($imageDir, $baseImage, $imageSize);
 
                 }
             }
@@ -136,7 +167,7 @@ class ProductSaveAfter implements ObserverInterface
             // Start to Send Image to Instagram
             if ($image != '') {
 
-                $caption = $this->helper->getInstagramPostDescription($product);
+                $caption = $this->_helper->getInstagramPostDescription($product);
 
                 if (!empty($account)) {
                     $instagram->setUser($account['username'], $account['password']);
@@ -146,36 +177,30 @@ class ProductSaveAfter implements ObserverInterface
 
                     $instagram->login();
 
-                } catch (\Exception $e) {
-                    $this->logger->critical($e->getMessage());
-                }
-
-                try {
-
                     $result = $instagram->uploadPhoto($image, $caption);
 
                     if ($result['status'] === 'ok') {
-                        $product->setData('posted_to_instagram', 1);
 
-                        $productRepositoryFactory = $this->_objectManager->create('Magento\Catalog\Api\ProductRepositoryInterface');
-                        $productRepositoryFactory->save($product);
-                        $this->messageManager->addSuccessMessage(__('The product has been posted to https://www.instagram.com/p/' . $result['media']['code']));
+                        $this->_action->updateAttributes([$product->getId()], ['posted_to_instagram' => 1], $currentStore->getId());
+
+                        $this->_messageManager->addSuccessMessage(__('The product has been posted to https://www.instagram.com/p/' . $result['media']['code']));
+
+                        $item->setProductId($product->getId());
+                        $item->setType('success');
+                        $item->setMessages($this->_jsonHelper->jsonEncode($result));
+                        $item->setCreatedAt(date('Y-m-d h:i:s'));
+                        $item->save();
+
                     }
 
                     if ($result['status'] === 'fail') {
 
-                        $this->messageManager->addErrorMessage(__($result['message'] . '. Please check product\'s images again, https://help.instagram.com/1631821640426723'));
+                        $this->_messageManager->addErrorMessage(__($result['message'] . '. Please check product\'s images again, https://help.instagram.com/1631821640426723'));
                     }
 
 
-                    $item->setProductId($product->getId());
-                    $item->setType('success');
-                    $item->setMessages($this->jsonHelper->jsonEncode($result));
-                    $item->setCreatedAt(date('Y-m-d h:i:s'));
-                    $item->save();
-
                 } catch (\Exception $e) {
-                    $this->logger->critical($e->getMessage());
+                    $this->_logger->critical($e->getMessage());
                 }
             }
         }
