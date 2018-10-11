@@ -5,6 +5,13 @@
             <general>
                 <enable>0</enable>
             </general>
+            <comment_hashtag>
+                <enable>0</enable>
+                <product_description>1</product_description>
+                <category_hashtag>1</category_hashtag>
+                <enable_custom>0</enable_custom>
+                <description_template><![CDATA[{{CUSTOMHASTAG}} {{CATEGORYHASHTAG}} {{PRODUCTDESC}} {{PRODUCTNAME}}]]></description_template>
+            </comment_hashtag>
         </auto_instagram_post>
     </default>
 </config>

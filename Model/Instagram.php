@@ -2,8 +2,6 @@
 
 namespace GhoSter\AutoInstagramPost\Model;
 
-
-
 class Instagram
 {
     const API_URL = 'https://i.instagram.com/api/v1/';
@@ -59,7 +57,7 @@ class Instagram
 
         $this->directory_list = $directory_list;
 
-        $this->IGDataPath = $this->directory_list->getPath('var');
+        $this->IGDataPath = $this->directory_list->getPath('var') . DIRECTORY_SEPARATOR;
 
     }
 
@@ -460,7 +458,7 @@ class Instagram
             [
                 'type' => 'form-data',
                 'name' => 'recipient_users',
-                'data' => "[[$recimient_users]]",
+                'data' => "[[$recipeint_users]]",
             ],
             [
                 'type' => 'form-data',

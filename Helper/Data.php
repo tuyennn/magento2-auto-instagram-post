@@ -160,6 +160,10 @@ class Data extends AbstractHelper
 
     public function isModuleEnabled($store = null)
     {
+        if(empty($this->getUsernameInfo($store)) || empty($this->getPwdInfo($store))) {
+            return false;
+        }
+
         return $this->scopeConfig->getValue(
             self::XML_PATH_ENABLED_MODULE,
             \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
@@ -175,21 +179,30 @@ class Data extends AbstractHelper
      */
     public function getAccountInformation($store = null)
     {
+        if(empty($this->getUsernameInfo($store)) || empty($this->getPwdInfo($store))) {
+            return null;
+        }
 
-        $data['username'] = $this->scopeConfig->getValue(
+        return [
+            'username' => $this->getUsernameInfo($store),
+            'password' => $this->_encryptor->decrypt( $this->getPwdInfo($store))
+        ];
+    }
+
+    public function getUsernameInfo($store = null)
+    {
+        return $this->scopeConfig->getValue(
             self::XML_PATH_INSTAGRAM_USER,
             \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
             $store);
-        $data['password'] = $this->scopeConfig->getValue(
+    }
+
+    public function getPwdInfo($store = null)
+    {
+        return $this->scopeConfig->getValue(
             self::XML_PATH_INSTAGRAM_PASSWORD,
             \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
             $store);
-
-        $decrypt = $this->_encryptor->decrypt($data['password']);
-        $data['password'] = $decrypt;
-
-
-        return $data;
     }
 
     /**
@@ -343,7 +356,7 @@ class Data extends AbstractHelper
 
         if (!empty($hashTagsStripped)) {
             foreach ($hashTagsStripped as $hashTag) {
-                $html .= '#' . $hashTag . self::SPACE_STRING;
+                $html .= '#' . $hashTag  . self::SPACE_STRING;
             }
         }
 
@@ -357,7 +370,7 @@ class Data extends AbstractHelper
      */
     public function getProductDescription($_product)
     {
-        return strip_tags($_product->getDescription()) . self::SPACE_STRING;
+        return strip_tags($_product->getDescription());
     }
 
     /**
@@ -377,7 +390,7 @@ class Data extends AbstractHelper
     /**
      * Get Final Caption for Instagram Post
      *
-     * @param $_product
+     * @param $_product \Magento\Catalog\Model\Product
      * @return string
      */
     public function getInstagramPostDescription($_product)
@@ -393,13 +406,16 @@ class Data extends AbstractHelper
                         $html .= $this->getCustomHashHashtags();
                         break;
                     case 'CATEGORYHASHTAG':
-                        $html .= $this->getCategoriesHashtags($_product);
+                        $html .= self::SPACE_STRING . $this->getCategoriesHashtags($_product);
                         break;
                     case 'PRODUCTDESC':
-                        $html .= $this->getProductDescription($_product);
+                        $html .= self::SPACE_STRING . $this->getProductDescription($_product);
                         break;
                     case 'PRODUCTNAME':
-                        $html .= $_product->getName();
+                        $html .= self::SPACE_STRING . $_product->getName();
+                        break;
+                    case 'PRODUCTLINK':
+                        $html .= self::SPACE_STRING . $_product->getProductUrl();
                         break;
                     default:
                         $html .= $_product->getName();
