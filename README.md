@@ -8,7 +8,6 @@ This Magento 2 extension Auto Instagram Post allows you add your products immedi
 ---
 ## [![Alt GhoSter](http://thinghost.info/wp-content/uploads/2015/12/ghoster.png "thinghost.info")](http://thinghost.info) Installation
 
-- This module depends and requires [GhoSter_Core](https://github.com/tuyennn/GhoSter_Core) to run.
 - Download and place in app/code/GhoSter/AutoInstagramPost.
 - Run module enable and upgrade command
 - [Extension on GitHub](https://github.com/tuyennn/Auto-Instagram-Post)
