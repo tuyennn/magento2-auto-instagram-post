@@ -106,8 +106,11 @@ class InstallData implements InstallDataInterface
                 'searchable' => false,
                 'filterable' => false,
                 'comparable' => false,
-                'visible_on_front' => true,
-                'used_in_product_listing' => true,
+                'visible_on_front' => false,
+                'used_in_product_listing' => false,
+                'used_for_sort_by' => false,
+                'is_used_in_grid' => false,
+                'is_filterable_in_grid' => false,
                 'unique' => false,
                 'apply_to' => '',
                 'default' => 0

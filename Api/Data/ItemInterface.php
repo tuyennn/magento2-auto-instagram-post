@@ -1,9 +1,17 @@
 <?php
+
 namespace GhoSter\AutoInstagramPost\Api\Data;
 
-use Magento\Framework\Api\ExtensibleDataInterface;
 
-interface ItemInterface extends ExtensibleDataInterface {
+interface ItemInterface
+{
+
+    const ID = 'id';
+    const PRODUCT_ID = 'product_id';
+    const TYPE = 'type';
+    const MESSAGES = 'messages';
+    const CREATED_AT = 'created_at';
+
     /**
      * @return int
      */
@@ -51,4 +59,7 @@ interface ItemInterface extends ExtensibleDataInterface {
      */
     public function setMessages($messages);
 
+    public function getCreatedAt();
+
+    public function setCreatedAt($createdAt);
 }
