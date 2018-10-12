@@ -71,6 +71,8 @@ class Data extends AbstractHelper
      */
     protected $_escaper;
 
+    protected $_serializer;
+
     public function __construct(
         \Magento\Framework\App\Helper\Context $context,
         \Magento\Store\Model\StoreManagerInterface $storeManager,
@@ -80,8 +82,8 @@ class Data extends AbstractHelper
         Encryptor $encryptor,
         \Magento\Framework\Escaper $_escaper,
         ProductFactory $productFactory,
-        CategoryFactory $categoryFactory
-
+        CategoryFactory $categoryFactory,
+        \GhoSter\AutoInstagramPost\Model\Serialize\Serializer $serializer
     )
     {
         $this->_storeManager = $storeManager;
@@ -92,6 +94,7 @@ class Data extends AbstractHelper
         $this->productFactory = $productFactory;
         $this->categoryFactory = $categoryFactory;
         $this->_escaper = $_escaper;
+        $this->_serializer = $serializer;
         parent::__construct($context);
     }
 
@@ -307,7 +310,7 @@ class Data extends AbstractHelper
         );
 
         if ($hashTagConfig && $this->isEnableHashtag() && $this->isEnableCustomHashtag()) {
-            $hashTags = unserialize($hashTagConfig);
+            $hashTags = $this->_serializer->unserialize($hashTagConfig);
 
             if (is_array($hashTags)) {
                 foreach ($hashTags as $key => $hashTag) {
