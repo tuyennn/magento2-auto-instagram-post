@@ -92,7 +92,7 @@ class Instagram
      * @param bool $force
      *   Force login to Instagram, this will create a new session
      *
-     * @return array
+     * @return bool
      *    Login data
      * @throws \Exception
      */
@@ -115,9 +115,7 @@ class Instagram
             $login = $this->request('accounts/login/', $this->generateSignature(json_encode($data)), true);
 
             if ($login[1]['status'] === 'fail') {
-                throw new \Exception($login[1]['message']);
-
-                return;
+                return false;
             }
 
             $this->isLoggedIn = true;
@@ -134,7 +132,7 @@ class Instagram
             $this->getv2Inbox();
             $this->getRecentActivity();
 
-            return $login[1];
+            return true;
         }
 
         $check = $this->timelineFeed();
@@ -143,6 +141,8 @@ class Instagram
         }
         $this->getv2Inbox();
         $this->getRecentActivity();
+
+        return true;
     }
 
     public function syncFeatures()
@@ -294,9 +294,7 @@ class Instagram
         curl_close($ch);
 
         if ($upload['status'] === 'fail') {
-            throw new \Exception($upload['message']);
-
-            return;
+            return [];
         }
 
         if ($this->debug) {

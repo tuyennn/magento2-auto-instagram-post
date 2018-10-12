@@ -1,0 +1,49 @@
+<?php /* @var $block \GhoSter\AutoInstagramPost\Block\Adminhtml\System\Config\TestConnection */ ?>
+
+<script>
+    require([
+        'jquery',
+        'prototype'
+    ], function($j, $){
+
+        var testSpan = $j('#test_span');
+
+        $j('#test_connection').click(function () {
+            var params = {};
+            new Ajax.Request('<?php echo $block->getAjaxUrl() ?>', {
+                parameters:     params,
+                loaderArea:     false,
+                asynchronous:   true,
+                onCreate: function() {
+                    testSpan.find('.connected').hide();
+                    testSpan.find('.error').hide();
+                    testSpan.find('.processing').show();
+                    $j('#test_message_span').text('');
+                },
+                onSuccess: function(response) {
+                    testSpan.find('.processing').hide();
+
+                    var json = response.responseJSON;
+
+                    if(json.success) {
+                        testSpan.find('.connected').show();
+                    } else {
+                        testSpan.find('.error').show();
+                    }
+
+                    $j('#test_message_span').text(json.message);
+
+                }
+            });
+        });
+
+    });
+</script>
+
+<?php echo $block->getButtonHtml() ?>
+<span class="collect-indicator" id="test_span" style="display: inline-block; margin: 10px 0">
+    <img class="processing" hidden="hidden" alt="Processing" style="margin:0 5px" src="<?php echo $block->getViewFileUrl('images/process_spinner.gif') ?>"/>
+    <img class="connected" hidden="hidden" alt="Connected" style="margin:-3px 5px" src="<?php echo $block->getViewFileUrl('images/rule_component_apply.gif') ?>"/>
+    <img class="error" hidden="hidden" alt="Error" style="margin:-3px 5px" src="<?php echo $block->getViewFileUrl('images/rule_component_remove.gif') ?>"/>
+    <span id="test_message_span"></span>
+</span>

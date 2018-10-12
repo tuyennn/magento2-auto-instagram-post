@@ -172,11 +172,14 @@ class ProductSaveAfter implements ObserverInterface
 
                 try {
 
-                    $instagram->login();
+                    if (!$this->loginInstagram()) {
+                        $this->_messageManager->addErrorMessage(__('Unauthorized Instagram Account, check your user/password setting'));
+                    }
+
                     $result = $instagram->uploadPhoto($image, $caption);
 
                     if (empty($result)) {
-                        $this->_messageManager->addErrorMessage(__('Unauthorized Instagram Account, check your user/password setting'));
+                        $this->_messageManager->addErrorMessage(__('Something went wrong while uploading to Instagram.'));
                     }
 
                     if ($result['status'] === 'fail') {
@@ -210,8 +213,6 @@ class ProductSaveAfter implements ObserverInterface
                     }
 
 
-
-
                 } catch (\Exception $e) {
                     $this->_logger->critical($e->getMessage());
                 }
@@ -228,5 +229,14 @@ class ProductSaveAfter implements ObserverInterface
     private function getInstagram()
     {
         return $this->_instagram;
+    }
+
+    /**
+     * @return array
+     * @throws \Exception
+     */
+    private function loginInstagram()
+    {
+        return $this->getInstagram()->login();
     }
 }

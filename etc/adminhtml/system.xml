@@ -21,7 +21,7 @@
                         <field id="enable">1</field>
                     </depends>
                 </field>
-                <field id="password" translate="label" type="password" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="0">
+                <field id="password" translate="label" type="password" sortOrder="20" showInDefault="1" showInWebsite="0" showInStore="0">
                     <label>Password</label>
                     <frontend_class>required-entry</frontend_class>
                     <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
@@ -29,7 +29,15 @@
                         <field id="enable">1</field>
                     </depends>
                 </field>
-                <field id="upload_image_id" translate="label comment" type="image" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="0">
+                <field id="test_connection" translate="label comment" type="button" sortOrder="30" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <frontend_model>GhoSter\AutoInstagramPost\Block\Adminhtml\System\Config\TestConnection</frontend_model>
+                    <label/>
+                    <comment><![CDATA[This action will try to use your provided data to login with Instagram API]]></comment>
+                    <depends>
+                        <field id="enable">1</field>
+                    </depends>
+                </field>
+                <field id="upload_image_id" translate="label comment" type="image" sortOrder="40" showInDefault="1" showInWebsite="0" showInStore="0">
                     <label>Default Image</label>
                     <backend_model>GhoSter\AutoInstagramPost\Model\Config\Backend\Image</backend_model>
                     <base_url type="media" scope_info="1">instagram</base_url>
