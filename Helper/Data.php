@@ -426,6 +426,8 @@ class Data extends AbstractHelper
                 }
             }
 
+        } else {
+            $html .= $_product->getName();
         }
 
         return $html;
