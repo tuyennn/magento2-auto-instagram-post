@@ -60,7 +60,7 @@ class TestConnection extends Action
 
         try {
 
-            if (!empty($account)) {
+            if (!empty($account) && isset($account['username']) && isset($account['password'])) {
                 $instagram->setUser($account['username'], $account['password']);
             } else {
                 $responseData = [
@@ -102,5 +102,15 @@ class TestConnection extends Action
     private function getInstagram()
     {
         return $this->_instagram;
+    }
+
+    /**
+     * Is the user allowed to view the blog post grid.
+     *
+     * @return bool
+     */
+    protected function _isAllowed()
+    {
+        return $this->_authorization->isAllowed('GhoSter_AutoInstagramPost');
     }
 }

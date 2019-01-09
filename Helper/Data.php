@@ -107,11 +107,12 @@ class Data extends AbstractHelper
      * @param null $height
      * @param int $quality
      * @return mixed|string
+     * @throws \Magento\Framework\Exception\FileSystemException
      */
     public function getResizeImage($imageDir, $image = null, $width, $height = null, $quality = 100)
     {
 
-        if($height) {
+        if ($height) {
             $imageResized = $this->directory_list->getPath('media') . DIRECTORY_SEPARATOR . 'catalog' . DIRECTORY_SEPARATOR . 'product' . DIRECTORY_SEPARATOR . 'product_resized' . DIRECTORY_SEPARATOR . $width . 'x' . $height . $image;
         } else {
             $imageResized = $this->directory_list->getPath('media') . DIRECTORY_SEPARATOR . 'catalog' . DIRECTORY_SEPARATOR . 'product' . DIRECTORY_SEPARATOR . 'product_resized' . DIRECTORY_SEPARATOR . $width . $image;
@@ -145,7 +146,6 @@ class Data extends AbstractHelper
                 }
             }
 
-
             return $imageResized;
 
         } else {
@@ -163,7 +163,7 @@ class Data extends AbstractHelper
 
     public function isModuleEnabled($store = null)
     {
-        if(empty($this->getUsernameInfo($store)) || empty($this->getPwdInfo($store))) {
+        if (empty($this->getUsernameInfo($store)) || empty($this->getPwdInfo($store))) {
             return false;
         }
 
@@ -182,13 +182,13 @@ class Data extends AbstractHelper
      */
     public function getAccountInformation($store = null)
     {
-        if(empty($this->getUsernameInfo($store)) || empty($this->getPwdInfo($store))) {
+        if (empty($this->getUsernameInfo($store)) || empty($this->getPwdInfo($store))) {
             return null;
         }
 
         return [
             'username' => $this->getUsernameInfo($store),
-            'password' => $this->_encryptor->decrypt( $this->getPwdInfo($store))
+            'password' => $this->getPwdInfo($store)
         ];
     }
 
@@ -213,6 +213,7 @@ class Data extends AbstractHelper
      *
      * @param null $store
      * @return string
+     * @throws \Magento\Framework\Exception\FileSystemException
      */
     public function getDefaultImage($store = null)
     {
@@ -359,7 +360,7 @@ class Data extends AbstractHelper
 
         if (!empty($hashTagsStripped)) {
             foreach ($hashTagsStripped as $hashTag) {
-                $html .= '#' . $hashTag  . self::SPACE_STRING;
+                $html .= '#' . $hashTag . self::SPACE_STRING;
             }
         }
 

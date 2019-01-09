@@ -7,6 +7,9 @@ use GhoSter\AutoInstagramPost\Api\Data\ItemInterface;
 class Item extends \Magento\Framework\Model\AbstractModel implements ItemInterface
 {
 
+    const TYPE_SUCCESS = 'success';
+    const TYPE_ERROR = 'error';
+
     /**
      * @var \Magento\Framework\Stdlib\DateTime
      */

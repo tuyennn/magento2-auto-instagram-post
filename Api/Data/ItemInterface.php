@@ -59,7 +59,14 @@ interface ItemInterface
      */
     public function setMessages($messages);
 
+    /**
+     * @return string
+     */
     public function getCreatedAt();
 
+    /**
+     * @param $createdAt
+     * @return void
+     */
     public function setCreatedAt($createdAt);
 }

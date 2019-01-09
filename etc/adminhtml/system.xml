@@ -20,14 +20,15 @@
                     <depends>
                         <field id="enable">1</field>
                     </depends>
+                    <validate>required-entry</validate>
                 </field>
                 <field id="password" translate="label" type="password" sortOrder="20" showInDefault="1" showInWebsite="0" showInStore="0">
                     <label>Password</label>
-                    <frontend_class>required-entry</frontend_class>
                     <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
                     <depends>
                         <field id="enable">1</field>
                     </depends>
+                    <validate>required-entry</validate>
                 </field>
                 <field id="test_connection" translate="label comment" type="button" sortOrder="30" showInDefault="1" showInWebsite="0" showInStore="0">
                     <frontend_model>GhoSter\AutoInstagramPost\Block\Adminhtml\System\Config\TestConnection</frontend_model>
@@ -45,6 +46,7 @@
                     <depends>
                         <field id="enable">1</field>
                     </depends>
+                    <validate>required-entry</validate>
                 </field>
             </group>
             <group id="comment_hashtag" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="0" showInStore="0">
@@ -52,12 +54,16 @@
                 <field id="enable" translate="label" type="select" sortOrder="0" showInDefault="1" showInWebsite="0" showInStore="0">
                     <label>Enable Auto Hashtag and Description on Insgram Post</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <depends>
+                        <field id="*/general/enable">1</field>
+                    </depends>
                 </field>
                 <field id="product_description" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="0">
                     <label>Enable Auto Product Description as Instagram Post Description</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <comment><![CDATA[Description on Instagram Post should be generated from product description]]></comment>
                     <depends>
+                        <field id="*/general/enable">1</field>
                         <field id="enable">1</field>
                     </depends>
                 </field>
@@ -66,6 +72,7 @@
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <comment><![CDATA[Hashtag on Instagram Post should be generated from categories which product belongs]]></comment>
                     <depends>
+                        <field id="*/general/enable">1</field>
                         <field id="enable">1</field>
                     </depends>
                 </field>
@@ -73,6 +80,7 @@
                     <label>Enable Custom Hashtag</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <depends>
+                        <field id="*/general/enable">1</field>
                         <field id="enable">1</field>
                     </depends>
                 </field>
@@ -82,6 +90,7 @@
                     <backend_model>GhoSter\AutoInstagramPost\Model\Config\Backend\Hashtag</backend_model>
                     <comment><![CDATA[Hashtag on Instagram Post should include these custom, no need to add # before hashtag, value should be stripped and remove spaces]]></comment>
                     <depends>
+                        <field id="*/general/enable">1</field>
                         <field id="enable">1</field>
                         <field id="enable_custom">1</field>
                     </depends>
@@ -90,6 +99,7 @@
                     <label>Instagram Post Description Template</label>
                     <comment><![CDATA[{{CUSTOMHASTAG}} {{CATEGORYHASHTAG}} {{PRODUCTDESC}} {{PRODUCTNAME}}</br>Instagram caption character limit: 2,200 characters</br>Instagram hashtag limit: 30 hashtags</br>Instagram bio character limit: 150 characters]]></comment>
                     <depends>
+                        <field id="*/general/enable">1</field>
                         <field id="enable">1</field>
                     </depends>
                 </field>

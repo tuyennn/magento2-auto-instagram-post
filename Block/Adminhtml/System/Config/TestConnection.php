@@ -55,13 +55,14 @@ class TestConnection extends Field
      */
     public function getAjaxUrl()
     {
-        return $this->getUrl('auto_instagram/system_config/testConnection');
+        return $this->getUrl('auto_instagram/system_config/testConnection', ['store' => $this->_request->getParam('store')]);
     }
 
     /**
      * Generate collect button html
      *
      * @return string
+     * @throws \Magento\Framework\Exception\LocalizedException
      */
     public function getButtonHtml()
     {

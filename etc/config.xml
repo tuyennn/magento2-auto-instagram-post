@@ -1,9 +1,11 @@
 <?xml version="1.0"?>
-<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../Store/etc/config.xsd">
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
     <default>
         <auto_instagram_post>
             <general>
                 <enable>0</enable>
+                <username/>
+                <password backend_model="Magento\Config\Model\Config\Backend\Encrypted"/>
             </general>
             <comment_hashtag>
                 <enable>0</enable>
