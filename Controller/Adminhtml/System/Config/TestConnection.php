@@ -111,6 +111,6 @@ class TestConnection extends Action
      */
     protected function _isAllowed()
     {
-        return $this->_authorization->isAllowed('GhoSter_AutoInstagramPost');
+        return $this->_authorization->isAllowed('GhoSter_AutoInstagramPost::auto_instagram_post');
     }
 }

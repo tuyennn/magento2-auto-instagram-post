@@ -93,14 +93,15 @@ class InstallData implements InstallDataInterface
             'posted_to_instagram',
             [
                 'type' => 'int',
-                'backend' => '',
+                'group' => 'Auto Instagram Post',
+                'backend' => 'Magento\Catalog\Model\Product\Attribute\Backend\Boolean',
                 'frontend' => '',
-                'label' => 'Posted to Instagram',
-                'input' => 'hidden',
+                'label' => 'Instagram Status',
+                'input' => 'select',
                 'class' => '',
                 'source' => 'Magento\Eav\Model\Entity\Attribute\Source\Boolean',
                 'global' => Attribute\ScopedAttributeInterface::SCOPE_GLOBAL,
-                'visible' => true,
+                'visible' => false,
                 'required' => false,
                 'user_defined' => true,
                 'searchable' => false,
@@ -109,20 +110,18 @@ class InstallData implements InstallDataInterface
                 'visible_on_front' => false,
                 'used_in_product_listing' => false,
                 'used_for_sort_by' => false,
-                'is_used_in_grid' => false,
-                'is_filterable_in_grid' => false,
+                'is_used_in_grid' => true,
+                'is_filterable_in_grid' => true,
                 'unique' => false,
                 'apply_to' => '',
                 'default' => 0
             ]
         );
 
-        $eavSetup->updateAttribute(\Magento\Catalog\Model\Product::ENTITY, 'posted_to_instagram', 'is_visible', '0');
-
         $this->addAttributeToAllAttributeSets('posted_to_instagram', '');
     }
 
-    public function addAttributeToAllAttributeSets( $attributeCode,  $attributeGroupCode)
+    public function addAttributeToAllAttributeSets($attributeCode, $attributeGroupCode)
     {
         /** @var Attribute $attribute */
         $entityType = $this->eavTypeFactory->create()->loadByCode(\Magento\Catalog\Model\Product::ENTITY);
