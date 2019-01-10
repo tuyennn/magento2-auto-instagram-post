@@ -5,7 +5,7 @@ This Magento 2 extension Auto Instagram Post allows you add your products immedi
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.me/thinghost)
-![Version 1.0.1](https://img.shields.io/badge/Version-1.0.1-green.svg)
+![Version 1.1.0](https://img.shields.io/badge/Version-1.1.0-green.svg)
 
 ---
 ## [![Alt GhoSter](http://thinghost.info/wp-content/uploads/2015/12/ghoster.png "thinghost.info")](http://thinghost.info) Overview
@@ -17,12 +17,15 @@ This Magento 2 extension Auto Instagram Post allows you add your products immedi
 ![Alt Screenshot-1](http://thinghost.info/wp-content/uploads/2017/08/Selection_426-1024x487.jpg "thinghost.info")
 ![Alt Screenshot-2](http://thinghost.info/wp-content/uploads/2017/08/Selection_424-1024x530.jpg "thinghost.info")
 ![Alt Screenshot-3](http://thinghost.info/wp-content/uploads/2017/08/Selection_425-1024x456.jpg "thinghost.info")
+![Alt Screenshot-4](https://thinghost.info/wp-content/uploads/2015/12/Selection_489.jpg "thinghost.info")
+![Alt Screenshot-5](https://thinghost.info/wp-content/uploads/2015/12/Selection_490.jpg "thinghost.info")
 
 ## Main Features
 
 * Use Instagram API to post main Product Image of store to Instagram
 * Support configurations with #hashtag.
 * Support sort content of comment as user defined.
+* Support Manage Products Grid then decide to Post or rePost to Instagram
 
 ## Configure and Manage
 

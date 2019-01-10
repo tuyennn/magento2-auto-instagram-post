@@ -8,6 +8,13 @@
                         <resource id="GhoSter_AutoInstagramPost::manage_product" title="Manage Post By Products" translate="title" sortOrder="10" />
                     </resource>
                 </resource>
+                <resource id="Magento_Backend::stores">
+                    <resource id="Magento_Backend::stores_settings">
+                        <resource id="Magento_Config::config">
+                            <resource id="GhoSter_AutoInstagramPost::config" title="Auto Instagram Post Settings" sortOrder="1000"/>
+                        </resource>
+                    </resource>
+                </resource>
             </resource>
         </resources>
     </acl>
