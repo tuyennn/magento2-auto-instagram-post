@@ -96,6 +96,15 @@
                     </item>
                 </argument>
             </action>
+            <action name="instagram_post">
+                <argument name="data" xsi:type="array">
+                    <item name="config" xsi:type="array">
+                        <item name="type" xsi:type="string">instagram_post</item>
+                        <item name="label" xsi:type="string" translate="true">Post to Instagram</item>
+                        <item name="url" xsi:type="url" path="auto_instagram/manage/massPost"/>
+                    </item>
+                </argument>
+            </action>
         </massaction>
         <paging name="listing_paging"/>
     </listingToolbar>

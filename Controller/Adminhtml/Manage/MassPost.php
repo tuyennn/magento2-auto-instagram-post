@@ -8,9 +8,12 @@ use GhoSter\AutoInstagramPost\Model\Instagram;
 use GhoSter\AutoInstagramPost\Model\Item as InstagramItem;
 use Magento\Catalog\Model\ProductFactory;
 use GhoSter\AutoInstagramPost\Model\ImageProcessor;
+use Magento\Framework\Exception\NotFoundException;
+use Magento\Ui\Component\MassAction\Filter;
+use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory;
 
 
-class Post extends Action
+class MassPost extends Action
 {
     /**
      * @var \GhoSter\AutoInstagramPost\Helper\Data
@@ -70,6 +73,18 @@ class Post extends Action
      */
     protected $_image;
 
+    /**
+     * MassActions filter
+     *
+     * @var Filter
+     */
+    protected $filter;
+
+    /**
+     * @var CollectionFactory
+     */
+    protected $collectionFactory;
+
 
     public function __construct(
         Action\Context $context,
@@ -79,6 +94,8 @@ class Post extends Action
         ImageProcessor $imageProcessor,
         \GhoSter\AutoInstagramPost\Model\ItemFactory $itemFactory,
         \Magento\Framework\Json\Helper\Data $jsonHelper,
+        Filter $filter,
+        CollectionFactory $collectionFactory,
         \Psr\Log\LoggerInterface $logger
     )
     {
@@ -88,63 +105,75 @@ class Post extends Action
         $this->imageProcessor = $imageProcessor;
         $this->_itemFactory = $itemFactory;
         $this->_jsonHelper = $jsonHelper;
-        $this->_logger = $logger;
         $this->_account = $this->helper->getAccountInformation();
+        $this->filter = $filter;
+        $this->collectionFactory = $collectionFactory;
+        $this->_logger = $logger;
         parent::__construct($context);
     }
 
     public function execute()
     {
+        if (!$this->getRequest()->isPost()) {
+            throw new NotFoundException(__('Page not found'));
+        }
+
         /** @var \Magento\Backend\Model\View\Result\Redirect $resultRedirect */
         $resultRedirect = $this->resultRedirectFactory->create();
-        $id = $this->getRequest()->getParam('id');
+        $productIds = $this->getRequest()->getParam('selected');
 
-        if ($id) {
-            /** @var $product \Magento\Catalog\Model\Product */
-            $product = $this->productFactory->create()->load($id);
+        if (!empty($productIds)) {
+            $storeId = (int)$this->getRequest()->getParam('store', 0);
 
+            $productCollection = $this->collectionFactory->create()
+                ->addAttributeToSelect('*')
+                ->addAttributeToFilter('entity_id', ['in' => $productIds]);
             try {
 
-                $this->_image = $this->imageProcessor->processBaseImage($product);
+                if (!empty($this->_account) && isset($this->_account['username']) && isset($this->_account['password'])) {
+                    $this->getInstagram()->setUser($this->_account['username'], $this->_account['password']);
+                }
 
-                if ($image = $this->getImage()) {
-                    $caption = $this->helper->getInstagramPostDescription($product);
 
-                    if (!empty($this->_account) && isset($this->_account['username']) && isset($this->_account['password'])) {
-                        $this->getInstagram()->setUser($this->_account['username'], $this->_account['password']);
+                if (!$this->getInstagram()->login()) {
+                    $this->messageManager->addErrorMessage(__('Unauthorized Instagram Account, check your user/password setting'));
+                }
+
+                $productUploaded = $errorNumber = 0;
+
+                foreach ($productCollection as $product) {
+
+                    $this->_image = $this->imageProcessor->processBaseImage($product);
+
+                    if ($image = $this->getImage()) {
+                        $caption = $this->helper->getInstagramPostDescription($product);
+                        $result = $this->getInstagram()->uploadPhoto($image, $caption);
+
+                        if (empty($result)) {
+                            $errorNumber++;
+                            $this->_recordInstagramLog($product, [], InstagramItem::TYPE_ERROR);
+                        }
+
+                        if (isset($result['status']) && $result['status'] === Instagram::STATUS_OK) {
+                            $productUploaded++;
+                            $this->_recordInstagramLog($product, $result, InstagramItem::TYPE_SUCCESS);
+                        }
                     }
+                }
 
-                    if (!$this->getInstagram()->login()) {
-                        $this->messageManager->addErrorMessage(__('Unauthorized Instagram Account, check your user/password setting'));
-                    }
+                if ($errorNumber) {
+                    $this->messageManager->addComplexErrorMessage(
+                        'InstagramError',
+                        [
+                            'instagram_link' => 'https://help.instagram.com/1631821640426723'
+                        ]
+                    );
+                }
 
-                    $result = $this->getInstagram()->uploadPhoto($image, $caption);
-
-                    if (empty($result)) {
-                        $this->messageManager->addErrorMessage(__('Something went wrong while uploading to Instagram.'));
-                    }
-
-                    if (empty($result)) {
-                        $this->_recordInstagramLog($product, [], InstagramItem::TYPE_ERROR);
-
-                        $this->messageManager->addComplexErrorMessage(
-                            'InstagramError',
-                            [
-                                'instagram_link' => 'https://help.instagram.com/1631821640426723'
-                            ]
-                        );
-                    }
-
-                    if (isset($result['status']) && $result['status'] === Instagram::STATUS_OK) {
-                        $this->_recordInstagramLog($product, $result, InstagramItem::TYPE_SUCCESS);
-
-                        $this->messageManager->addComplexSuccessMessage(
-                            'InstagramSuccess',
-                            [
-                                'instagram_link' => 'https://www.instagram.com/p/' . $result['media']['code']
-                            ]
-                        );
-                    }
+                if ($productUploaded) {
+                    $this->messageManager->addSuccessMessage(
+                        __('A total of %1 images(s) have been uploaded to Instagram.', $productUploaded)
+                    );
                 }
 
                 return $resultRedirect->setPath('*/*/');
@@ -157,6 +186,7 @@ class Post extends Action
 
             return $resultRedirect->setPath('*/*/');
         }
+
         return $resultRedirect->setPath('*/*/');
     }
 
