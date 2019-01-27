@@ -126,6 +126,10 @@ class ProductSaveAfter implements ObserverInterface
             return;
         }
 
+        if (!$this->_helper->isObserverEnabled()) {
+            return;
+        }
+
         /** @var $product \Magento\Catalog\Model\Product */
         $product = $observer->getEvent()->getProduct();
 
