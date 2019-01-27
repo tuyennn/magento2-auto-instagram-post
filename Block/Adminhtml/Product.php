@@ -23,6 +23,7 @@ class Product extends \Magento\Backend\Block\Widget\Container
     /**
      * Event constructor.
      * @param \Magento\Backend\Block\Widget\Context $context
+     * @param \Magento\Catalog\Model\Product\TypeFactory $typeFactory
      * @param \Magento\Catalog\Model\ProductFactory $productFactory
      * @param EavSetup $eavSetup
      * @param array $data

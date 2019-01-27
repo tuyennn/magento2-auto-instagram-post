@@ -33,6 +33,7 @@ This Magento 2 extension Auto Instagram Post allows you add your products immedi
 * Username - Your Instagram Username.
 * Password - Your Instagram Password.
 * Default Image - When you add a product without a main Image to store, this image will be uploaded to Insragram.
+* Allow auto posting to Instagram after Saving Product - Enable Observer after product saved
 * Enable Auto Hashtag and Description on Instagram Post - Enable below options
 * Enable Auto Product Description - This will add product description to your feature post.
 * Enable Custom Hashtag - Your custom hashtags go there.

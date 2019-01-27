@@ -48,6 +48,13 @@
                     </depends>
                     <validate>required-entry</validate>
                 </field>
+                <field id="enable_observer" translate="label" type="select" sortOrder="50" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Allow auto posting to Instagram after Saving Product</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <depends>
+                        <field id="enable">1</field>
+                    </depends>
+                </field>
             </group>
             <group id="comment_hashtag" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="0" showInStore="0">
                 <label>Comment and Hashtag Settings</label>

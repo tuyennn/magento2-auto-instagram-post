@@ -14,6 +14,7 @@ class Hashtag extends \Magento\Config\Block\System\Config\Form\Field\FieldArray\
      * Get activation options.
      *
      * @return \GhoSter\AutoInstagramPost\Block\Adminhtml\System\Config\Hashtag\Activation
+     * @throws \Magento\Framework\Exception\LocalizedException
      */
     protected function _getActivationRenderer()
     {
@@ -28,6 +29,9 @@ class Hashtag extends \Magento\Config\Block\System\Config\Form\Field\FieldArray\
         return $this->_activation;
     }
 
+    /**
+     * @throws \Magento\Framework\Exception\LocalizedException
+     */
     protected function _prepareToRender()
     {
         $this->addColumn('hashtag', ['label' => __('Hashtag Value'), 'renderer' => false]);
@@ -47,6 +51,7 @@ class Hashtag extends \Magento\Config\Block\System\Config\Form\Field\FieldArray\
      *
      * @param \Magento\Framework\DataObject $row
      * @return void
+     * @throws \Magento\Framework\Exception\LocalizedException
      */
     protected function _prepareArrayRow(\Magento\Framework\DataObject $row)
     {

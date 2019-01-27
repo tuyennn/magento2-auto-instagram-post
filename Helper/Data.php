@@ -7,7 +7,8 @@ use Magento\Store\Model\Store;
 use Magento\Framework\Encryption\EncryptorInterface as Encryptor;
 use Magento\Catalog\Model\ProductFactory;
 use Magento\Catalog\Model\CategoryFactory;
-
+use Magento\Framework\Escaper;
+use GhoSter\AutoInstagramPost\Model\Serialize\Serializer;
 
 class Data extends AbstractHelper
 {
@@ -16,6 +17,7 @@ class Data extends AbstractHelper
     const XML_PATH_INSTAGRAM_USER = 'auto_instagram_post/general/username';
     const XML_PATH_INSTAGRAM_PASSWORD = 'auto_instagram_post/general/password';
     const XML_PATH_DEFAULT_IMAGE = 'auto_instagram_post/general/upload_image_id';
+    const XML_PATH_ENABLE_OBSERVER = 'auto_instagram_post/general/enable_observer';
 
     const XML_PATH_ENABLE_HASHTAG_DESCRIPTION = 'auto_instagram_post/comment_hashtag/enable';
     const XML_PATH_ENABLE_PRODUCT_DESCRIPTION = 'auto_instagram_post/comment_hashtag/product_description';
@@ -67,10 +69,13 @@ class Data extends AbstractHelper
     protected $categoryFactory;
 
     /**
-     * @var \Magento\Framework\Escaper
+     * @var Escaper
      */
     protected $_escaper;
 
+    /**
+     * @var Serializer
+     */
     protected $_serializer;
 
     public function __construct(
@@ -80,10 +85,10 @@ class Data extends AbstractHelper
         \Magento\Framework\Filesystem $filesystem,
         \Magento\Framework\Image\AdapterFactory $imageFactory,
         Encryptor $encryptor,
-        \Magento\Framework\Escaper $_escaper,
+        Escaper $_escaper,
         ProductFactory $productFactory,
         CategoryFactory $categoryFactory,
-        \GhoSter\AutoInstagramPost\Model\Serialize\Serializer $serializer
+        Serializer $serializer
     )
     {
         $this->_storeManager = $storeManager;
@@ -113,9 +118,17 @@ class Data extends AbstractHelper
     {
 
         if ($height) {
-            $imageResized = $this->directory_list->getPath('media') . DIRECTORY_SEPARATOR . 'catalog' . DIRECTORY_SEPARATOR . 'product' . DIRECTORY_SEPARATOR . 'product_resized' . DIRECTORY_SEPARATOR . $width . 'x' . $height . $image;
+            $imageResized = $this->directory_list->getPath('media')
+                . DIRECTORY_SEPARATOR . 'catalog'
+                . DIRECTORY_SEPARATOR . 'product'
+                . DIRECTORY_SEPARATOR . 'product_resized'
+                . DIRECTORY_SEPARATOR . $width . 'x' . $height . $image;
         } else {
-            $imageResized = $this->directory_list->getPath('media') . DIRECTORY_SEPARATOR . 'catalog' . DIRECTORY_SEPARATOR . 'product' . DIRECTORY_SEPARATOR . 'product_resized' . DIRECTORY_SEPARATOR . $width . $image;
+            $imageResized = $this->directory_list->getPath('media')
+                . DIRECTORY_SEPARATOR . 'catalog'
+                . DIRECTORY_SEPARATOR . 'product'
+                . DIRECTORY_SEPARATOR . 'product_resized'
+                . DIRECTORY_SEPARATOR . $width . $image;
         }
         if (!file_exists($imageResized)):
             $imageObj = $this->_imageFactory->create();
@@ -129,7 +142,6 @@ class Data extends AbstractHelper
         endif;
 
         if (file_exists($imageResized)) {
-
             $imageExts = explode('.', $imageResized);
             if (strtolower($imageExts[count($imageExts) - 1]) == 'png') {
                 $realPng = $imageResized;
@@ -167,7 +179,7 @@ class Data extends AbstractHelper
             return false;
         }
 
-        return $this->scopeConfig->getValue(
+        return (bool)$this->scopeConfig->getValue(
             self::XML_PATH_ENABLED_MODULE,
             \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
             $store
@@ -192,6 +204,11 @@ class Data extends AbstractHelper
         ];
     }
 
+    /**
+     * Get Username
+     * @param null $store
+     * @return mixed
+     */
     public function getUsernameInfo($store = null)
     {
         return $this->scopeConfig->getValue(
@@ -200,6 +217,12 @@ class Data extends AbstractHelper
             $store);
     }
 
+    /**
+     * Get Password
+     *
+     * @param null $store
+     * @return mixed
+     */
     public function getPwdInfo($store = null)
     {
         return $this->scopeConfig->getValue(
@@ -228,9 +251,26 @@ class Data extends AbstractHelper
             return '';
         }
 
-        $imagePath = $this->directory_list->getPath('media') . DIRECTORY_SEPARATOR . $uploadDir . DIRECTORY_SEPARATOR . $image;
+        $imagePath = $this->directory_list->getPath('media')
+            . DIRECTORY_SEPARATOR . $uploadDir
+            . DIRECTORY_SEPARATOR . $image;
 
         return $imagePath;
+    }
+
+    /**
+     * Auto Observer after product saved
+     *
+     * @param null $store
+     * @return bool
+     */
+    public function isObserverEnabled($store = null)
+    {
+        return (bool)$this->scopeConfig->getValue(
+            self::XML_PATH_ENABLE_OBSERVER,
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
+            $store
+        );
     }
 
     /**
@@ -241,7 +281,7 @@ class Data extends AbstractHelper
      */
     public function isEnableHashtag($store = null)
     {
-        return $this->scopeConfig->getValue(
+        return (bool)$this->scopeConfig->getValue(
             self::XML_PATH_ENABLE_HASHTAG_DESCRIPTION,
             \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
             $store
@@ -257,7 +297,7 @@ class Data extends AbstractHelper
      */
     public function isEnableCustomHashtag($store = null)
     {
-        return $this->scopeConfig->getValue(
+        return (bool)$this->scopeConfig->getValue(
             self::XML_PATH_ENABLE_CUSTOM_HASHTAG,
             \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
             $store
@@ -271,7 +311,7 @@ class Data extends AbstractHelper
      */
     public function isEnableCategoryHashtag($store = null)
     {
-        return $this->scopeConfig->getValue(
+        return (bool)$this->scopeConfig->getValue(
             self::XML_PATH_ENABLE_CATEGORY_HASHTAG,
             \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
             $store
@@ -286,7 +326,7 @@ class Data extends AbstractHelper
      */
     public function isEnableProductDescription($store = null)
     {
-        return $this->scopeConfig->getValue(
+        return (bool)$this->scopeConfig->getValue(
             self::XML_PATH_ENABLE_PRODUCT_DESCRIPTION,
             \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
             $store
@@ -397,36 +437,36 @@ class Data extends AbstractHelper
      * @param $_product \Magento\Catalog\Model\Product
      * @return string
      */
-    public function getInstagramPostDescription($_product)
+    public function getInstagramPostDescription($_product = null)
     {
         $html = '';
         $stringTemplate = $this->getInstagramPostTemplate();
 
         if (preg_match_all("~\{\{\s*(.*?)\s*\}\}~", $stringTemplate, $matches)) {
-
-            foreach ($matches[1] as $key => $match) {
-                switch ($match) {
-                    case 'CUSTOMHASTAG':
-                        $html .= $this->getCustomHashHashtags();
-                        break;
-                    case 'CATEGORYHASHTAG':
-                        $html .= self::SPACE_STRING . $this->getCategoriesHashtags($_product);
-                        break;
-                    case 'PRODUCTDESC':
-                        $html .= self::SPACE_STRING . $this->getProductDescription($_product);
-                        break;
-                    case 'PRODUCTNAME':
-                        $html .= self::SPACE_STRING . $_product->getName();
-                        break;
-                    case 'PRODUCTLINK':
-                        $html .= self::SPACE_STRING . $_product->getProductUrl();
-                        break;
-                    default:
-                        $html .= $_product->getName();
-                        break;
+            if(isset($matches[1]) && is_array($matches[1])) {
+                foreach ($matches[1] as $key => $match) {
+                    $addOnSpace = $key !== 0 ? self::SPACE_STRING: '';
+                    switch ($match) {
+                        case 'CUSTOMHASTAG':
+                            $html .= $addOnSpace . $this->getCustomHashHashtags();
+                            break;
+                        case 'CATEGORYHASHTAG':
+                            $html .= $addOnSpace . $this->getCategoriesHashtags($_product);
+                            break;
+                        case 'PRODUCTDESC':
+                            $html .= $addOnSpace . $this->getProductDescription($_product);
+                            break;
+                        case 'PRODUCTNAME':
+                            $html .= $addOnSpace . $_product->getName();
+                            break;
+                        case 'PRODUCTLINK':
+                            $html .= $addOnSpace . $_product->getProductUrl();
+                            break;
+                        default:
+                            break;
+                    }
                 }
             }
-
         } else {
             $html .= $_product->getName();
         }
