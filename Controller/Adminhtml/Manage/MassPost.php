@@ -11,6 +11,7 @@ use GhoSter\AutoInstagramPost\Model\ImageProcessor;
 use Magento\Framework\Exception\NotFoundException;
 use Magento\Ui\Component\MassAction\Filter;
 use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory;
+use GhoSter\AutoInstagramPost\Model\Logger;
 
 
 class MassPost extends Action
@@ -21,25 +22,15 @@ class MassPost extends Action
     protected $helper;
 
     /**
-     * @var \Magento\Framework\Json\Helper\Data
+     * @var Logger
      */
-    protected $_jsonHelper;
-
-    /**
-     * @var \Psr\Log\LoggerInterface
-     */
-    private $_logger;
+    protected $_logger;
 
 
     /**
      * @var array
      */
     protected $_account;
-
-    /**
-     * @var \GhoSter\AutoInstagramPost\Model\ItemFactory
-     */
-    protected $_itemFactory;
 
     /**
      * @var Instagram
@@ -64,14 +55,9 @@ class MassPost extends Action
     protected $productFactory;
 
     /**
-     * @var \GhoSter\AutoInstagramPost\Model\ImageProcessor
+     * @var ImageProcessor
      */
     protected $imageProcessor;
-
-    /**
-     * @var string
-     */
-    protected $_image;
 
     /**
      * MassActions filter
@@ -92,19 +78,15 @@ class MassPost extends Action
         ProductFactory $productFactory,
         Instagram $instagram,
         ImageProcessor $imageProcessor,
-        \GhoSter\AutoInstagramPost\Model\ItemFactory $itemFactory,
-        \Magento\Framework\Json\Helper\Data $jsonHelper,
         Filter $filter,
         CollectionFactory $collectionFactory,
-        \Psr\Log\LoggerInterface $logger
+        Logger $logger
     )
     {
         $this->helper = $helper;
         $this->productFactory = $productFactory;
         $this->_instagram = $instagram;
         $this->imageProcessor = $imageProcessor;
-        $this->_itemFactory = $itemFactory;
-        $this->_jsonHelper = $jsonHelper;
         $this->_account = $this->helper->getAccountInformation();
         $this->filter = $filter;
         $this->collectionFactory = $collectionFactory;
@@ -130,12 +112,17 @@ class MassPost extends Action
                 ->addAttributeToFilter('entity_id', ['in' => $productIds]);
             try {
 
-                if (!empty($this->_account) && isset($this->_account['username']) && isset($this->_account['password'])) {
-                    $this->getInstagram()->setUser($this->_account['username'], $this->_account['password']);
+                if (!empty($this->_account)
+                    && isset($this->_account['username'])
+                    && isset($this->_account['password'])) {
+                    $this->_getInstagram()->setUser(
+                        $this->_account['username'],
+                        $this->_account['password']
+                    );
                 }
 
 
-                if (!$this->getInstagram()->login()) {
+                if (!$this->_getInstagram()->login()) {
                     $this->messageManager->addErrorMessage(__('Unauthorized Instagram Account, check your user/password setting'));
                 }
 
@@ -143,20 +130,30 @@ class MassPost extends Action
 
                 foreach ($productCollection as $product) {
 
-                    $this->_image = $this->imageProcessor->processBaseImage($product);
+                    $image = $this->imageProcessor->processBaseImage($product);
 
-                    if ($image = $this->getImage()) {
+                    if ($image) {
                         $caption = $this->helper->getInstagramPostDescription($product);
-                        $result = $this->getInstagram()->uploadPhoto($image, $caption);
+                        $result = $this->_getInstagram()->uploadPhoto($image, $caption);
 
                         if (empty($result)) {
                             $errorNumber++;
-                            $this->_recordInstagramLog($product, [], InstagramItem::TYPE_ERROR);
+                            $this->_logger->recordInstagramLog(
+                                $product,
+                                [],
+                                InstagramItem::TYPE_ERROR
+                            );
                         }
 
-                        if (isset($result['status']) && $result['status'] === Instagram::STATUS_OK) {
+                        if (isset($result['status'])
+                            && $result['status'] === Instagram::STATUS_OK
+                        ) {
                             $productUploaded++;
-                            $this->_recordInstagramLog($product, $result, InstagramItem::TYPE_SUCCESS);
+                            $this->_logger->recordInstagramLog(
+                                $product,
+                                $result,
+                                InstagramItem::TYPE_SUCCESS
+                            );
                         }
                     }
                 }
@@ -195,45 +192,11 @@ class MassPost extends Action
      *
      * @return \GhoSter\AutoInstagramPost\Model\Instagram
      */
-    private function getInstagram()
+    private function _getInstagram()
     {
         return $this->_instagram;
     }
 
-    /**
-     * @return string
-     */
-    public function getImage()
-    {
-        return $this->_image;
-    }
-
-    /**
-     * Record log after uploading
-     *
-     * @param $product \Magento\Catalog\Model\Product
-     * @param $result
-     * @param $type
-     * @throws \Exception
-     */
-    private function _recordInstagramLog($product, $result, $type = null)
-    {
-        if ($type) {
-
-            if ($type == InstagramItem::TYPE_SUCCESS) {
-                $product->setData('posted_to_instagram', 1);
-                $product->getResource()->saveAttribute($product, 'posted_to_instagram');
-            }
-
-            /** @var $item InstagramItem */
-            $item = $this->_itemFactory->create();
-            $item->setProductId($product->getId());
-            $item->setType($type);
-            $item->setMessages($this->_jsonHelper->jsonEncode($result));
-            $item->setCreatedAt(date('Y-m-d h:i:s'));
-            $item->save();
-        }
-    }
 
     /**
      * Is the user allowed to view the blog post grid.

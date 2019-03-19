@@ -6,6 +6,7 @@ use Magento\Framework\Event\ObserverInterface;
 use GhoSter\AutoInstagramPost\Model\Instagram;
 use GhoSter\AutoInstagramPost\Model\ImageProcessor;
 use GhoSter\AutoInstagramPost\Model\Item as InstagramItem;
+use GhoSter\AutoInstagramPost\Model\Logger;
 
 class ProductSaveAfter implements ObserverInterface
 {
@@ -16,9 +17,9 @@ class ProductSaveAfter implements ObserverInterface
     protected $_helper;
 
     /**
-     * @var \Psr\Log\LoggerInterface
+     * @var Logger
      */
-    private $_logger;
+    protected $_logger;
 
     /**
      * @var \Magento\Framework\Message\ManagerInterface
@@ -30,10 +31,6 @@ class ProductSaveAfter implements ObserverInterface
      */
     protected $_account;
 
-    /**
-     * @var \GhoSter\AutoInstagramPost\Model\ItemFactory
-     */
-    protected $_itemFactory;
 
     /**
      * @var Instagram
@@ -44,11 +41,6 @@ class ProductSaveAfter implements ObserverInterface
      * @var \Magento\Framework\App\Filesystem\DirectoryList
      */
     protected $_directoryList;
-
-    /**
-     * @var \Magento\Framework\Json\Helper\Data
-     */
-    protected $_jsonHelper;
 
     /**
      * @var \Magento\Catalog\Model\ResourceModel\Product\Action
@@ -63,11 +55,9 @@ class ProductSaveAfter implements ObserverInterface
     protected $_storeManager;
 
     /**
-     * @var \GhoSter\AutoInstagramPost\Model\ImageProcessor
+     * @var ImageProcessor
      */
     protected $imageProcessor;
-
-    protected $_image;
 
     /**
      * ProductSaveAfter constructor.
@@ -75,10 +65,8 @@ class ProductSaveAfter implements ObserverInterface
      * @param \GhoSter\AutoInstagramPost\Helper\Data $helper
      * @param Instagram $instagram
      * @param ImageProcessor $imageProcessor
-     * @param \GhoSter\AutoInstagramPost\Model\ItemFactory $itemFactory
-     * @param \Psr\Log\LoggerInterface $logger
+     * @param Logger $logger
      * @param \Magento\Framework\App\Filesystem\DirectoryList $directoryList
-     * @param \Magento\Framework\Json\Helper\Data $jsonHelper
      * @param \Magento\Store\Model\StoreManagerInterface $storeManager
      * @param \Magento\Catalog\Model\ResourceModel\Product\Action $action
      */
@@ -87,22 +75,17 @@ class ProductSaveAfter implements ObserverInterface
         \GhoSter\AutoInstagramPost\Helper\Data $helper,
         Instagram $instagram,
         ImageProcessor $imageProcessor,
-        \GhoSter\AutoInstagramPost\Model\ItemFactory $itemFactory,
-        \Psr\Log\LoggerInterface $logger,
+        Logger $logger,
         \Magento\Framework\App\Filesystem\DirectoryList $directoryList,
-        \Magento\Framework\Json\Helper\Data $jsonHelper,
         \Magento\Store\Model\StoreManagerInterface $storeManager,
         \Magento\Catalog\Model\ResourceModel\Product\Action $action
-
     )
     {
         $this->_helper = $helper;
         $this->_instagram = $instagram;
         $this->imageProcessor = $imageProcessor;
-        $this->_itemFactory = $itemFactory;
         $this->_logger = $logger;
         $this->_directoryList = $directoryList;
-        $this->_jsonHelper = $jsonHelper;
 
         $this->_account = $this->_helper->getAccountInformation();
         $this->_messageManager = $context->getMessageManager();
@@ -136,31 +119,41 @@ class ProductSaveAfter implements ObserverInterface
         if (!$product->getData('posted_to_instagram')) {
 
             // Check and process exist image size
-            $this->_image = $this->imageProcessor->processBaseImage($product);
+            $image = $this->imageProcessor->processBaseImage($product);
 
             // Start to Send Image to Instagram
-            if ($image = $this->getImage()) {
+            if ($image) {
 
                 $caption = $this->_helper->getInstagramPostDescription($product);
 
-                if (!empty($this->_account) && isset($this->_account['username']) && isset($this->_account['password'])) {
-                    $this->getInstagram()->setUser($this->_account['username'], $this->_account['password']);
+                if (!empty($this->_account)
+                    && isset($this->_account['username'])
+                    && isset($this->_account['password'])) {
+                    $this->_getInstagram()
+                        ->setUser(
+                            $this->_account['username'],
+                            $this->_account['password']
+                        );
                 }
 
                 try {
 
-                    if (!$this->getInstagram()->login()) {
+                    if (!$this->_getInstagram()->login()) {
                         $this->_messageManager->addErrorMessage(__('Unauthorized Instagram Account, check your user/password setting'));
                     }
 
-                    $result = $this->getInstagram()->uploadPhoto($image, $caption);
+                    $result = $this->_getInstagram()->uploadPhoto($image, $caption);
 
                     if (empty($result)) {
                         $this->_messageManager->addErrorMessage(__('Something went wrong while uploading to Instagram.'));
                     }
 
                     if ($result['status'] === Instagram::STATUS_FAIL) {
-                        $this->_recordInstagramLog($product, $result, InstagramItem::TYPE_ERROR);
+                        $this->_logger->recordInstagramLog(
+                            $product,
+                            $result,
+                            InstagramItem::TYPE_ERROR
+                        );
 
                         $this->_messageManager->addComplexErrorMessage(
                             'InstagramError',
@@ -171,7 +164,11 @@ class ProductSaveAfter implements ObserverInterface
                     }
 
                     if ($result['status'] === Instagram::STATUS_OK) {
-                        $this->_recordInstagramLog($product, $result, InstagramItem::TYPE_SUCCESS);
+                        $this->_logger->recordInstagramLog(
+                            $product,
+                            $result,
+                            InstagramItem::TYPE_SUCCESS
+                        );
 
                         $this->_messageManager->addComplexSuccessMessage(
                             'InstagramSuccess',
@@ -183,7 +180,7 @@ class ProductSaveAfter implements ObserverInterface
 
 
                 } catch (\Exception $e) {
-                    $this->_logger->critical($e->getMessage());
+                    $this->_messageManager->addErrorMessage(__('Something went wrong while uploading to Instagram.'));
                 }
             }
         }
@@ -195,43 +192,8 @@ class ProductSaveAfter implements ObserverInterface
      *
      * @return \GhoSter\AutoInstagramPost\Model\Instagram
      */
-    private function getInstagram()
+    private function _getInstagram()
     {
         return $this->_instagram;
-    }
-
-    /**
-     * @return string
-     */
-    public function getImage()
-    {
-        return $this->_image;
-    }
-
-    /**
-     * Record log after uploading
-     *
-     * @param $product \Magento\Catalog\Model\Product
-     * @param $result
-     * @param $type
-     * @throws \Exception
-     */
-    private function _recordInstagramLog($product, $result, $type = null)
-    {
-        if ($type) {
-
-            if ($type == InstagramItem::TYPE_SUCCESS) {
-                $product->setData('posted_to_instagram', 1);
-                $product->getResource()->saveAttribute($product, 'posted_to_instagram');
-            }
-
-            /** @var $item InstagramItem */
-            $item = $this->_itemFactory->create();
-            $item->setProductId($product->getId());
-            $item->setType($type);
-            $item->setMessages($this->_jsonHelper->jsonEncode($result));
-            $item->setCreatedAt(date('Y-m-d h:i:s'));
-            $item->save();
-        }
     }
 }
