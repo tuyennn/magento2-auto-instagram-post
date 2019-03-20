@@ -28,4 +28,7 @@
             </argument>
         </arguments>
     </type>
+    <type name="Magento\Backend\Model\Menu\Builder">
+        <plugin name="GhoSter_AutoInstagramPost::disable_manage_menu_depends_module_status" type="GhoSter\AutoInstagramPost\Plugin\Model\Menu\BuilderPlugin"/>
+    </type>
 </config>

@@ -5,7 +5,7 @@ This Magento 2 extension Auto Instagram Post allows you add your products immedi
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.me/thinghost)
-![Version 1.1.1](https://img.shields.io/badge/Version-1.1.1-green.svg)
+![Version 1.1.2](https://img.shields.io/badge/Version-1.1.2-green.svg)
 
 ---
 ## [![Alt GhoSter](http://thinghost.info/wp-content/uploads/2015/12/ghoster.png "thinghost.info")](http://thinghost.info) Overview
