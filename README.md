@@ -70,6 +70,13 @@ rm -rf var/*
 
 php bin/magento setup:static-content:deploy
 ```
+
+## Contribution
+
+* Fork this repository
+* Create your feature branch (`git checkout -b your-new-feature`) always from `develop`
+* Commit and Submit a new Pull Request
+
 ## Licence
 
 [Open Software License (OSL 3.0)](http://opensource.org/licenses/osl-3.0.php)
