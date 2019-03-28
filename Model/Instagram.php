@@ -23,8 +23,8 @@ class Instagram
     protected $isLoggedIn = false;  // Session status
     protected $rank_token;          // Rank token
     protected $IGDataPath;          // Data storage path
-    protected $directory_list;
-    protected $helper;
+    protected $directoryList;
+    protected $config;
     protected $logger;
 
 
@@ -36,30 +36,30 @@ class Instagram
      * @param $helper \GhoSter\AutoInstagramPost\Helper\Data
      *  Default folder to store data, you can change it.
      *
-     * @param \Magento\Framework\App\Filesystem\DirectoryList $directory_list
-     * @param \GhoSter\AutoInstagramPost\Helper\Data $helper
+     * @param \Magento\Framework\App\Filesystem\DirectoryList $directoryList
+     * @param \GhoSter\AutoInstagramPost\Model\Config $config
      * @param \Psr\Log\LoggerInterface $logger
      * @param array $data
      */
     public function __construct(
-        \Magento\Framework\App\Filesystem\DirectoryList $directory_list,
-        \GhoSter\AutoInstagramPost\Helper\Data $helper,
+        \Magento\Framework\App\Filesystem\DirectoryList $directoryList,
+        \GhoSter\AutoInstagramPost\Model\Config $config,
         \Psr\Log\LoggerInterface $logger,
         array $data = []
     )
     {
         $this->logger = $logger;
-        $this->helper = $helper;
+        $this->config = $config;
 
-        if ($this->helper->isModuleEnabled()) {
-            $account = $this->helper->getAccountInformation();
+        if ($this->config->isEnabled()) {
+            $account = $this->config->getAccountInformation();
             $this->device_id = $this->generateDeviceId(md5($account['username'] . $account['password']));
             $this->setUser($account['username'], $account['password']);
         }
 
-        $this->directory_list = $directory_list;
+        $this->directoryList = $directoryList;
 
-        $this->IGDataPath = $this->directory_list->getPath('var') . DIRECTORY_SEPARATOR;
+        $this->IGDataPath = $this->directoryList->getPath('var') . DIRECTORY_SEPARATOR;
 
     }
 

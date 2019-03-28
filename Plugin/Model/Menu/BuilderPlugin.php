@@ -5,7 +5,7 @@ namespace GhoSter\AutoInstagramPost\Plugin\Model\Menu;
 use Magento\Backend\Model\Menu\Builder;
 use Magento\Backend\Model\Menu;
 use Magento\Backend\Model\Menu\ItemFactory;
-use GhoSter\AutoInstagramPost\Helper\Data as InstagramHelper;
+use GhoSter\AutoInstagramPost\Model\Config as InstagramConfig;
 
 class BuilderPlugin
 {
@@ -18,22 +18,22 @@ class BuilderPlugin
     private $menuItemFactory;
 
     /**
-     * @var InstagramHelper
+     * @var InstagramConfig
      */
-    protected $helper;
+    protected $config;
 
     /**
      * BuilderPlugin constructor.
      *
      * @param ItemFactory $menuItemFactory
-     * @param InstagramHelper $helper
+     * @param InstagramConfig $config
      */
     public function __construct(
         ItemFactory $menuItemFactory,
-        InstagramHelper $helper
+        InstagramConfig $config
     )
     {
-        $this->helper = $helper;
+        $this->config = $config;
         $this->menuItemFactory = $menuItemFactory;
     }
 
@@ -49,7 +49,7 @@ class BuilderPlugin
         Menu $menu
     )
     {
-        if(!$this->helper->isModuleEnabled() && $menu->get(self::MENU_MANAGE_ID)) {
+        if(!$this->config->isEnabled() && $menu->get(self::MENU_MANAGE_ID)) {
             $menu->remove(self::MENU_MANAGE_ID);
         }
 

@@ -8,19 +8,24 @@ use GhoSter\AutoInstagramPost\Model\Instagram;
 use GhoSter\AutoInstagramPost\Model\Item as InstagramItem;
 use Magento\Catalog\Model\ProductFactory;
 use GhoSter\AutoInstagramPost\Model\ImageProcessor;
-use GhoSter\AutoInstagramPost\Model\Logger;
+use GhoSter\AutoInstagramPost\Model\Logger as InstagramLogger;
+use GhoSter\AutoInstagramPost\Model\Config as InstagramConfig;
+use GhoSter\AutoInstagramPost\Helper\Data as InstagramHelper;
 
 class Post extends Action
 {
     /**
-     * @var \GhoSter\AutoInstagramPost\Helper\Data
+     * @var InstagramHelper
      */
     protected $helper;
 
+    /** @var InstagramConfig */
+    protected $config;
+
     /**
-     * @var Logger
+     * @var InstagramLogger
      */
-    protected $_logger;
+    protected $logger;
 
     /**
      * @var array
@@ -33,18 +38,6 @@ class Post extends Action
     protected $_instagram;
 
     /**
-     * @var \Magento\Framework\App\Filesystem\DirectoryList
-     */
-    protected $_directoryList;
-
-    /**
-     * Store manager
-     *
-     * @var \Magento\Store\Model\StoreManagerInterface
-     */
-    protected $_storeManager;
-
-    /**
      * @var ProductFactory
      */
     protected $productFactory;
@@ -55,21 +48,34 @@ class Post extends Action
     protected $imageProcessor;
 
 
+    /**
+     * Post constructor.
+     *
+     * @param Action\Context $context
+     * @param InstagramConfig $config
+     * @param InstagramHelper $helper
+     * @param ProductFactory $productFactory
+     * @param Instagram $instagram
+     * @param ImageProcessor $imageProcessor
+     * @param InstagramLogger $logger
+     */
     public function __construct(
         Action\Context $context,
-        \GhoSter\AutoInstagramPost\Helper\Data $helper,
+        InstagramConfig $config,
+        InstagramHelper $helper,
         ProductFactory $productFactory,
         Instagram $instagram,
         ImageProcessor $imageProcessor,
-        Logger $logger
+        InstagramLogger $logger
     )
     {
+        $this->config = $config;
         $this->helper = $helper;
         $this->productFactory = $productFactory;
         $this->_instagram = $instagram;
         $this->imageProcessor = $imageProcessor;
-        $this->_logger = $logger;
-        $this->_account = $this->helper->getAccountInformation();
+        $this->logger = $logger;
+        $this->_account = $this->config->getAccountInformation();
         parent::__construct($context);
     }
 
@@ -93,25 +99,29 @@ class Post extends Action
                     if (!empty($this->_account)
                         && isset($this->_account['username'])
                         && isset($this->_account['password'])) {
-                        $this->_getInstagram()
+                        $this->getInstagram()
                             ->setUser(
                                 $this->_account['username'],
                                 $this->_account['password']
                             );
                     }
 
-                    if (!$this->_getInstagram()->login()) {
+                    if (!$this->getInstagram()->login()) {
                         $this->messageManager->addErrorMessage(__('Unauthorized Instagram Account, check your user/password setting'));
                     }
 
-                    $result = $this->_getInstagram()->uploadPhoto($image, $caption);
+                    $result = $this->getInstagram()
+                        ->uploadPhoto(
+                            $image,
+                            $caption
+                        );
 
                     if (empty($result)) {
                         $this->messageManager->addErrorMessage(__('Something went wrong while uploading to Instagram.'));
                     }
 
                     if (empty($result)) {
-                        $this->_logger->recordInstagramLog(
+                        $this->logger->recordInstagramLog(
                             $product,
                             [],
                             InstagramItem::TYPE_ERROR
@@ -128,7 +138,7 @@ class Post extends Action
                     if (isset($result['status'])
                         && $result['status'] === Instagram::STATUS_OK
                     ) {
-                        $this->_logger->recordInstagramLog(
+                        $this->logger->recordInstagramLog(
                             $product,
                             $result,
                             InstagramItem::TYPE_SUCCESS
@@ -148,7 +158,10 @@ class Post extends Action
             } catch (LocalizedException $e) {
                 $this->messageManager->addErrorMessage($e->getMessage());
             } catch (\Exception $e) {
-                $this->messageManager->addExceptionMessage($e, __('Something went wrong while posting to Instagram.'));
+                $this->messageManager->addExceptionMessage(
+                    $e,
+                    __('Something went wrong while posting to Instagram.')
+                );
             }
 
             return $resultRedirect->setPath('*/*/');
@@ -157,15 +170,12 @@ class Post extends Action
     }
 
     /**
-     * Get Instagram Client
-     *
-     * @return \GhoSter\AutoInstagramPost\Model\Instagram
+     * @return Instagram
      */
-    private function _getInstagram()
+    public function getInstagram(): Instagram
     {
         return $this->_instagram;
     }
-
 
     /**
      * Is the user allowed to view the blog post grid.
