@@ -249,8 +249,8 @@ class Data extends AbstractHelper
 
                 /** @var $collection CategoryCollection */
                 $collection = $this->categoryCollectionFactory->create();
-                $collection->addAttributeToSelect('name');
                 $collection->addAttributeToFilter('entity_id', $product->getCategoryIds());
+                $collection->addNameToResult();
 
                 $i = 1;
                 foreach ($collection as $category) {
@@ -264,8 +264,8 @@ class Data extends AbstractHelper
 
         }
 
-        if (!empty($hashTagsStripped)) {
-            foreach ($hashTagsStripped as $hashTag) {
+        if (!empty($hashTagsStrippedData)) {
+            foreach ($hashTagsStrippedData as $hashTag) {
                 $html .= '#' . $hashTag . self::SPACE_STRING;
             }
         }
