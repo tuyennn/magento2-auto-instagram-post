@@ -47,8 +47,11 @@ class Logger
 
                 if ($type == InstagramItem::TYPE_SUCCESS) {
                     $product->setData('posted_to_instagram', 1);
-                    $product->getResource()->saveAttribute($product, 'posted_to_instagram');
+                } elseif ($type == InstagramItem::TYPE_ERROR) {
+                    $product->setData('posted_to_instagram', 0);
                 }
+
+                $product->getResource()->saveAttribute($product, 'posted_to_instagram');
 
                 /** @var $item InstagramItem */
                 $item = $this->_itemFactory->create();

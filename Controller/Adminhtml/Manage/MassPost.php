@@ -5,59 +5,32 @@ namespace GhoSter\AutoInstagramPost\Controller\Adminhtml\Manage;
 use Magento\Backend\App\Action;
 use Magento\Framework\Exception\LocalizedException;
 use GhoSter\AutoInstagramPost\Model\Instagram;
+use GhoSter\AutoInstagramPost\Model\Instagram\Worker as InstagramWorker;
 use GhoSter\AutoInstagramPost\Model\Item as InstagramItem;
 use Magento\Catalog\Model\ProductFactory;
 use GhoSter\AutoInstagramPost\Model\ImageProcessor;
 use Magento\Framework\Exception\NotFoundException;
 use Magento\Ui\Component\MassAction\Filter;
 use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory;
-use GhoSter\AutoInstagramPost\Model\Logger;
+use GhoSter\AutoInstagramPost\Model\Logger as InstagramLogger;
+use GhoSter\AutoInstagramPost\Model\Config as InstagramConfig;
+use GhoSter\AutoInstagramPost\Helper\Data as InstagramHelper;
 
 
 class MassPost extends Action
 {
-    /**
-     * @var \GhoSter\AutoInstagramPost\Helper\Data
-     */
-    protected $helper;
+    /** @var InstagramConfig */
+    protected $config;
 
     /**
-     * @var Logger
+     * @var InstagramWorker
      */
-    protected $_logger;
-
-
-    /**
-     * @var array
-     */
-    protected $_account;
-
-    /**
-     * @var Instagram
-     */
-    protected $_instagram;
-
-    /**
-     * @var \Magento\Framework\App\Filesystem\DirectoryList
-     */
-    protected $_directoryList;
-
-    /**
-     * Store manager
-     *
-     * @var \Magento\Store\Model\StoreManagerInterface
-     */
-    protected $_storeManager;
+    protected $instagramWorker;
 
     /**
      * @var ProductFactory
      */
     protected $productFactory;
-
-    /**
-     * @var ImageProcessor
-     */
-    protected $imageProcessor;
 
     /**
      * MassActions filter
@@ -72,28 +45,34 @@ class MassPost extends Action
     protected $collectionFactory;
 
 
+    /**
+     * MassPost constructor.
+     *
+     * @param Action\Context $context
+     * @param ProductFactory $productFactory
+     * @param InstagramWorker $instagramWorker
+     * @param Filter $filter
+     * @param CollectionFactory $collectionFactory
+     */
     public function __construct(
         Action\Context $context,
-        \GhoSter\AutoInstagramPost\Helper\Data $helper,
         ProductFactory $productFactory,
-        Instagram $instagram,
-        ImageProcessor $imageProcessor,
+        InstagramWorker $instagramWorker,
         Filter $filter,
-        CollectionFactory $collectionFactory,
-        Logger $logger
-    )
+        CollectionFactory $collectionFactory
+)
     {
-        $this->helper = $helper;
         $this->productFactory = $productFactory;
-        $this->_instagram = $instagram;
-        $this->imageProcessor = $imageProcessor;
-        $this->_account = $this->helper->getAccountInformation();
+        $this->instagramWorker = $instagramWorker;
         $this->filter = $filter;
         $this->collectionFactory = $collectionFactory;
-        $this->_logger = $logger;
         parent::__construct($context);
     }
 
+    /**
+     * @return \Magento\Backend\Model\View\Result\Redirect|\Magento\Framework\App\ResponseInterface|\Magento\Framework\Controller\ResultInterface
+     * @throws NotFoundException
+     */
     public function execute()
     {
         if (!$this->getRequest()->isPost()) {
@@ -105,58 +84,15 @@ class MassPost extends Action
         $productIds = $this->getRequest()->getParam('selected');
 
         if (!empty($productIds)) {
-            $storeId = (int)$this->getRequest()->getParam('store', 0);
-
             $productCollection = $this->collectionFactory->create()
                 ->addAttributeToSelect('*')
                 ->addAttributeToFilter('entity_id', ['in' => $productIds]);
             try {
 
-                if (!empty($this->_account)
-                    && isset($this->_account['username'])
-                    && isset($this->_account['password'])) {
-                    $this->_getInstagram()->setUser(
-                        $this->_account['username'],
-                        $this->_account['password']
-                    );
-                }
+                $result = $this->instagramWorker->postInstagramByProductCollection($productCollection);
 
-
-                if (!$this->_getInstagram()->login()) {
-                    $this->messageManager->addErrorMessage(__('Unauthorized Instagram Account, check your user/password setting'));
-                }
-
-                $productUploaded = $errorNumber = 0;
-
-                foreach ($productCollection as $product) {
-
-                    $image = $this->imageProcessor->processBaseImage($product);
-
-                    if ($image) {
-                        $caption = $this->helper->getInstagramPostDescription($product);
-                        $result = $this->_getInstagram()->uploadPhoto($image, $caption);
-
-                        if (empty($result)) {
-                            $errorNumber++;
-                            $this->_logger->recordInstagramLog(
-                                $product,
-                                [],
-                                InstagramItem::TYPE_ERROR
-                            );
-                        }
-
-                        if (isset($result['status'])
-                            && $result['status'] === Instagram::STATUS_OK
-                        ) {
-                            $productUploaded++;
-                            $this->_logger->recordInstagramLog(
-                                $product,
-                                $result,
-                                InstagramItem::TYPE_SUCCESS
-                            );
-                        }
-                    }
-                }
+                $productUploaded = count($result);
+                $errorNumber = $productCollection->count() - $productUploaded;
 
                 if ($errorNumber) {
                     $this->messageManager->addComplexErrorMessage(
@@ -178,7 +114,10 @@ class MassPost extends Action
             } catch (LocalizedException $e) {
                 $this->messageManager->addErrorMessage($e->getMessage());
             } catch (\Exception $e) {
-                $this->messageManager->addExceptionMessage($e, __('Something went wrong while posting to Instagram.'));
+                $this->messageManager->addExceptionMessage(
+                    $e, 
+                    __('Something went wrong while posting to Instagram.')
+                );
             }
 
             return $resultRedirect->setPath('*/*/');
@@ -186,17 +125,6 @@ class MassPost extends Action
 
         return $resultRedirect->setPath('*/*/');
     }
-
-    /**
-     * Get Instagram Client
-     *
-     * @return \GhoSter\AutoInstagramPost\Model\Instagram
-     */
-    private function _getInstagram()
-    {
-        return $this->_instagram;
-    }
-
 
     /**
      * Is the user allowed to view the blog post grid.
