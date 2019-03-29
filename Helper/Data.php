@@ -119,14 +119,12 @@ class Data extends AbstractHelper
         try {
 
             if (!file_exists($imageResized)) {
-                $image = $this->imageFactory->create();
-                $image->open($imageDir);
-                $image->constrainOnly(true);
-                $image->keepAspectRatio(true);
-                $image->keepFrame(true);
-                $image->backgroundColor(array(255, 255, 255));
-                $image->resize($width, $height);
-                $image->save($imageResized);
+                $this->_generateInstagramImage(
+                    $imageResized,
+                    $imageDir,
+                    $width,
+                    $height
+                );
             }
 
             if (file_exists($imageResized)) {
@@ -154,6 +152,39 @@ class Data extends AbstractHelper
             $this->logger->critical($e);
             return false;
         }
+
+    }
+
+    /**
+     * Generate Image
+     *
+     * @param $imageResizedPath
+     * @param $imageDir
+     * @param $width
+     * @param $height
+     */
+    private function _generateInstagramImage(
+        $imageResizedPath,
+        $imageDir,
+        $width,
+        $height
+    ){
+        try {
+
+            $image = $this->imageFactory->create();
+            $image->open($imageDir);
+            $image->constrainOnly(true);
+            $image->keepAspectRatio(true);
+            $image->keepFrame(true);
+            $image->backgroundColor(array(255, 255, 255));
+            $image->resize($width, $height);
+            $image->save($imageResizedPath);
+
+        } catch (\Exception $e) {
+
+        }
+
+        return;
 
     }
 

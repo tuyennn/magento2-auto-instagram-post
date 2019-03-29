@@ -2,6 +2,17 @@
 
 namespace GhoSter\AutoInstagramPost\Model;
 
+use Magento\Framework\App\Filesystem\DirectoryList;
+use GhoSter\AutoInstagramPost\Model\Config as InstagramConfig;
+use Psr\Log\LoggerInterface;
+
+/**
+ * Class Instagram
+ *
+ * Rewrite Code From : https://github.com/mgp25/Instagram-API
+ *
+ * @package GhoSter\AutoInstagramPost\Model
+ */
 class Instagram
 {
     const API_URL = 'https://i.instagram.com/api/v1/';
@@ -17,11 +28,11 @@ class Instagram
     protected $debug;               // Debug
 
     protected $uuid;                // UUID
-    protected $device_id;           // Device ID
-    protected $username_id;         // Username ID
+    protected $deviceId;           // Device ID
+    protected $usernameId;         // Username ID
     protected $token;               // _csrftoken
     protected $isLoggedIn = false;  // Session status
-    protected $rank_token;          // Rank token
+    protected $rankToken;          // Rank token
     protected $IGDataPath;          // Data storage path
     protected $directoryList;
     protected $config;
@@ -32,19 +43,15 @@ class Instagram
     /**
      * Default class constructor.
      *
-     *   Debug on or off, false by default.
-     * @param $helper \GhoSter\AutoInstagramPost\Helper\Data
-     *  Default folder to store data, you can change it.
-     *
-     * @param \Magento\Framework\App\Filesystem\DirectoryList $directoryList
-     * @param \GhoSter\AutoInstagramPost\Model\Config $config
-     * @param \Psr\Log\LoggerInterface $logger
+     * @param DirectoryList $directoryList
+     * @param InstagramConfig $config
+     * @param LoggerInterface $logger
      * @param array $data
      */
     public function __construct(
-        \Magento\Framework\App\Filesystem\DirectoryList $directoryList,
-        \GhoSter\AutoInstagramPost\Model\Config $config,
-        \Psr\Log\LoggerInterface $logger,
+        DirectoryList $directoryList,
+        InstagramConfig $config,
+        LoggerInterface $logger,
         array $data = []
     )
     {
@@ -53,7 +60,9 @@ class Instagram
 
         if ($this->config->isEnabled()) {
             $account = $this->config->getAccountInformation();
-            $this->device_id = $this->generateDeviceId(md5($account['username'] . $account['password']));
+            $this->deviceId = $this->generateDeviceId(
+                md5($account['username'] . $account['password'])
+            );
             $this->setUser($account['username'], $account['password']);
         }
 
@@ -78,12 +87,13 @@ class Instagram
 
         $this->uuid = $this->generateUUID(true);
 
-        if ((file_exists($this->IGDataPath . "$this->username-cookies.dat")) && (file_exists($this->IGDataPath . "$this->username-userId.dat"))
+        if ((file_exists($this->IGDataPath . "$this->username-cookies.dat"))
+            && (file_exists($this->IGDataPath . "$this->username-userId.dat"))
             && (file_exists($this->IGDataPath . "$this->username-token.dat"))
         ) {
             $this->isLoggedIn = true;
-            $this->username_id = trim(file_get_contents($this->IGDataPath . "$username-userId.dat"));
-            $this->rank_token = $this->username_id . '_' . $this->uuid;
+            $this->usernameId = trim(file_get_contents($this->IGDataPath . "$username-userId.dat"));
+            $this->rankToken = $this->usernameId . '_' . $this->uuid;
             $this->token = trim(file_get_contents($this->IGDataPath . "$username-token.dat"));
         }
     }
@@ -109,7 +119,7 @@ class Instagram
                 '_csrftoken' => $token[0],
                 'username' => $this->username,
                 'guid' => $this->uuid,
-                'device_id' => $this->device_id,
+                'deviceId' => $this->deviceId,
                 'password' => $this->password,
                 'login_attempt_count' => '0',
             ];
@@ -121,9 +131,9 @@ class Instagram
             }
 
             $this->isLoggedIn = true;
-            $this->username_id = $login[1]['logged_in_user']['pk'];
-            file_put_contents($this->IGDataPath . $this->username . '-userId.dat', $this->username_id);
-            $this->rank_token = $this->username_id . '_' . $this->uuid;
+            $this->usernameId = $login[1]['logged_in_user']['pk'];
+            file_put_contents($this->IGDataPath . $this->username . '-userId.dat', $this->usernameId);
+            $this->rankToken = $this->usernameId . '_' . $this->uuid;
             preg_match('#Set-Cookie: csrftoken=([^;]+)#', $login[0], $match);
             $this->token = $match[1];
             file_put_contents($this->IGDataPath . $this->username . '-token.dat', $this->token);
@@ -136,7 +146,9 @@ class Instagram
         }
 
         $check = $this->timelineFeed();
-        if (isset($check['message']) && $check['message'] === 'login_required') {
+        if (isset($check['message'])
+            && $check['message'] === 'login_required'
+        ) {
             $this->login(true);
         }
 
@@ -147,8 +159,8 @@ class Instagram
     {
         $data = json_encode([
             '_uuid' => $this->uuid,
-            '_uid' => $this->username_id,
-            'id' => $this->username_id,
+            '_uid' => $this->usernameId,
+            'id' => $this->usernameId,
             '_csrftoken' => $this->token,
             'experiments' => self::EXPERIMENTS,
         ]);
@@ -175,8 +187,8 @@ class Instagram
     {
         $data = json_encode([
             '_uuid' => $this->uuid,
-            '_uid' => $this->username_id,
-            'id' => $this->username_id,
+            '_uid' => $this->usernameId,
+            'id' => $this->usernameId,
             '_csrftoken' => $this->token,
             'experiment' => 'ig_android_profile_contextual_feed',
         ]);
@@ -305,6 +317,14 @@ class Instagram
         return $configure;
     }
 
+    /**
+     * Upload Video
+     *
+     * @param $video
+     * @param null $caption
+     * @return mixed|void
+     * @throws \Exception
+     */
     public function uploadVideo($video, $caption = null)
     {
         $videoData = file_get_contents($video);
@@ -536,7 +556,7 @@ class Instagram
             ],
             '_csrftoken' => $this->token,
             '_uuid' => $this->uuid,
-            '_uid' => $this->username_id,
+            '_uid' => $this->usernameId,
             'caption' => $caption,
         ]);
 
@@ -572,7 +592,7 @@ class Instagram
             ],
             '_csrftoken' => $this->token,
             '_uuid' => $this->uuid,
-            '_uid' => $this->username_id,
+            '_uid' => $this->usernameId,
             'caption' => $caption,
         ]);
 
@@ -596,7 +616,7 @@ class Instagram
     {
         $data = json_encode([
             '_uuid' => $this->uuid,
-            '_uid' => $this->username_id,
+            '_uid' => $this->usernameId,
             '_csrftoken' => $this->token,
             'caption_text' => $captionText,
         ]);
@@ -617,7 +637,7 @@ class Instagram
     {
         $data = json_encode([
             '_uuid' => $this->uuid,
-            '_uid' => $this->username_id,
+            '_uid' => $this->usernameId,
             '_csrftoken' => $this->token,
         ]);
 
@@ -637,7 +657,7 @@ class Instagram
     {
         $data = json_encode([
             '_uuid' => $this->uuid,
-            '_uid' => $this->username_id,
+            '_uid' => $this->usernameId,
             '_csrftoken' => $this->token,
             'media_id' => $mediaId,
         ]);
@@ -658,7 +678,7 @@ class Instagram
     {
         $data = json_encode([
             '_uuid' => $this->uuid,
-            '_uid' => $this->username_id,
+            '_uid' => $this->usernameId,
             '_csrftoken' => $this->token,
             'media_id' => $mediaId,
         ]);
@@ -681,7 +701,7 @@ class Instagram
     {
         $data = json_encode([
             '_uuid' => $this->uuid,
-            '_uid' => $this->username_id,
+            '_uid' => $this->usernameId,
             '_csrftoken' => $this->token,
             'comment_text' => $commentText,
         ]);
@@ -704,7 +724,7 @@ class Instagram
     {
         $data = json_encode([
             '_uuid' => $this->uuid,
-            '_uid' => $this->username_id,
+            '_uid' => $this->usernameId,
             '_csrftoken' => $this->token,
             'caption_text' => $captionText,
         ]);
@@ -729,7 +749,7 @@ class Instagram
         $uData = json_encode([
             '_csrftoken' => $this->token,
             '_uuid' => $this->uuid,
-            '_uid' => $this->username_id,
+            '_uid' => $this->usernameId,
         ]);
 
         $endpoint = self::API_URL . 'accounts/change_profile_picture/';
@@ -800,7 +820,7 @@ class Instagram
     {
         $data = json_encode([
             '_uuid' => $this->uuid,
-            '_uid' => $this->username_id,
+            '_uid' => $this->usernameId,
             '_csrftoken' => $this->token,
         ]);
 
@@ -817,7 +837,7 @@ class Instagram
     {
         $data = json_encode([
             '_uuid' => $this->uuid,
-            '_uid' => $this->username_id,
+            '_uid' => $this->usernameId,
             '_csrftoken' => $this->token,
         ]);
 
@@ -834,7 +854,7 @@ class Instagram
     {
         $data = json_encode([
             '_uuid' => $this->uuid,
-            '_uid' => $this->username_id,
+            '_uid' => $this->usernameId,
             '_csrftoken' => $this->token,
         ]);
 
@@ -851,7 +871,7 @@ class Instagram
     {
         $data = json_encode([
             '_uuid' => $this->uuid,
-            '_uid' => $this->username_id,
+            '_uid' => $this->usernameId,
             '_csrftoken' => $this->token,
         ]);
 
@@ -879,7 +899,7 @@ class Instagram
     {
         $data = json_encode([
             '_uuid' => $this->uuid,
-            '_uid' => $this->username_id,
+            '_uid' => $this->usernameId,
             '_csrftoken' => $this->token,
             'external_url' => $url,
             'phone_number' => $phone,
@@ -915,7 +935,7 @@ class Instagram
      */
     public function getSelfUsernameInfo()
     {
-        return $this->getUsernameInfo($this->username_id);
+        return $this->getUsernameInfo($this->usernameId);
     }
 
     /**
@@ -989,7 +1009,7 @@ class Instagram
      */
     public function getUserTags($usernameId)
     {
-        $tags = $this->request("usertags/$usernameId/feed/?rank_token=$this->rank_token&ranked_content=true&")[1];
+        $tags = $this->request("usertags/$usernameId/feed/?rankToken=$this->rankToken&ranked_content=true&")[1];
 
         if ($tags['status'] !== 'ok') {
             throw new \Exception($tags['message'] . "\n");
@@ -1008,7 +1028,7 @@ class Instagram
      */
     public function getSelfUserTags()
     {
-        return $this->getUserTags($this->username_id);
+        return $this->getUserTags($this->usernameId);
     }
 
     /**
@@ -1022,7 +1042,7 @@ class Instagram
 
     public function tagFeed($tag)
     {
-        $userFeed = $this->request("feed/tag/$tag/?rank_token=$this->rank_token&ranked_content=true&")[1];
+        $userFeed = $this->request("feed/tag/$tag/?rankToken=$this->rankToken&ranked_content=true&")[1];
 
         if ($userFeed['status'] !== 'ok') {
             throw new \Exception($userFeed['message'] . "\n");
@@ -1084,7 +1104,7 @@ class Instagram
      */
     public function getSelfGeoMedia()
     {
-        return $this->getGeoMedia($this->username_id);
+        return $this->getGeoMedia($this->usernameId);
     }
 
     /**
@@ -1099,7 +1119,7 @@ class Instagram
     public function fbUserSearch($query)
     {
         $query = rawurlencode($query);
-        $query = $this->request("fbsearch/topsearch/?context=blended&query=$query&rank_token=$this->rank_token")[1];
+        $query = $this->request("fbsearch/topsearch/?context=blended&query=$query&rankToken=$this->rankToken")[1];
 
         if ($query['status'] !== 'ok') {
             throw new \Exception($query['message'] . "\n");
@@ -1121,7 +1141,7 @@ class Instagram
      */
     public function searchUsers($query)
     {
-        $query = $this->request('users/search/?ig_sig_key_version=' . self::SIG_KEY_VERSION . "&is_typeahead=true&query=$query&rank_token=$this->rank_token")[1];
+        $query = $this->request('users/search/?ig_sig_key_version=' . self::SIG_KEY_VERSION . "&is_typeahead=true&query=$query&rankToken=$this->rankToken")[1];
 
         if ($query['status'] !== 'ok') {
             throw new \Exception($query['message'] . "\n");
@@ -1181,7 +1201,7 @@ class Instagram
      */
     public function searchTags($query)
     {
-        $query = $this->request("tags/search/?is_typeahead=true&q=$query&rank_token=$this->rank_token")[1];
+        $query = $this->request("tags/search/?is_typeahead=true&q=$query&rankToken=$this->rankToken")[1];
 
         if ($query['status'] !== 'ok') {
             throw new \Exception($query['message'] . "\n");
@@ -1202,7 +1222,7 @@ class Instagram
     public function getTimeline($maxid = null)
     {
         $timeline = $this->request(
-            "feed/timeline/?rank_token=$this->rank_token&ranked_content=true"
+            "feed/timeline/?rankToken=$this->rankToken&ranked_content=true"
             . (!is_null($maxid) ? "&max_id=" . $maxid : '')
         )[1];
 
@@ -1230,7 +1250,7 @@ class Instagram
     public function getUserFeed($usernameId, $maxid = null, $minTimestamp = null)
     {
         $userFeed = $this->request(
-            "feed/user/$usernameId/?rank_token=$this->rank_token"
+            "feed/user/$usernameId/?rankToken=$this->rankToken"
             . (!is_null($maxid) ? "&max_id=" . $maxid : '')
             . (!is_null($minTimestamp) ? "&min_timestamp=" . $minTimestamp : '')
             . "&ranked_content=true"
@@ -1258,9 +1278,9 @@ class Instagram
     public function getHashtagFeed($hashtagString, $maxid = null)
     {
         if (is_null($maxid)) {
-            $endpoint = "feed/tag/$hashtagString/?rank_token=$this->rank_token&ranked_content=true&";
+            $endpoint = "feed/tag/$hashtagString/?rankToken=$this->rankToken&ranked_content=true&";
         } else {
-            $endpoint = "feed/tag/$hashtagString/?max_id=" . $maxid . "&rank_token=$this->rank_token&ranked_content=true&";
+            $endpoint = "feed/tag/$hashtagString/?max_id=" . $maxid . "&rankToken=$this->rankToken&ranked_content=true&";
         }
 
         $hashtagFeed = $this->request($endpoint)[1];
@@ -1287,7 +1307,7 @@ class Instagram
     public function searchLocation($query)
     {
         $query = rawurlencode($query);
-        $endpoint = "fbsearch/places/?rank_token=$this->rank_token&query=" . $query;
+        $endpoint = "fbsearch/places/?rankToken=$this->rankToken&query=" . $query;
 
         $locationFeed = $this->request($endpoint)[1];
 
@@ -1313,9 +1333,9 @@ class Instagram
     public function getLocationFeed($locationId, $maxid = null)
     {
         if (is_null($maxid)) {
-            $endpoint = "feed/location/$locationId/?rank_token=$this->rank_token&ranked_content=true&";
+            $endpoint = "feed/location/$locationId/?rankToken=$this->rankToken&ranked_content=true&";
         } else {
-            $endpoint = "feed/location/$locationId/?max_id=" . $maxid . "&rank_token=$this->rank_token&ranked_content=true&";
+            $endpoint = "feed/location/$locationId/?max_id=" . $maxid . "&rankToken=$this->rankToken&ranked_content=true&";
         }
 
         $locationFeed = $this->request($endpoint)[1];
@@ -1337,7 +1357,7 @@ class Instagram
      */
     public function getSelfUserFeed()
     {
-        return $this->getUserFeed($this->username_id);
+        return $this->getUserFeed($this->usernameId);
     }
 
     /**
@@ -1349,7 +1369,7 @@ class Instagram
      */
     public function getPopularFeed()
     {
-        $popularFeed = $this->request("feed/popular/?people_teaser_supported=1&rank_token=$this->rank_token&ranked_content=true&")[1];
+        $popularFeed = $this->request("feed/popular/?people_teaser_supported=1&rankToken=$this->rankToken&ranked_content=true&")[1];
 
         if ($popularFeed['status'] !== 'ok') {
             throw new \Exception($popularFeed['message'] . "\n");
@@ -1371,7 +1391,7 @@ class Instagram
      */
     public function getUserFollowings($usernameId, $maxid = null)
     {
-        return $this->request("friendships/$usernameId/following/?max_id=$maxid&ig_sig_key_version=" . self::SIG_KEY_VERSION . "&rank_token=$this->rank_token")[1];
+        return $this->request("friendships/$usernameId/following/?max_id=$maxid&ig_sig_key_version=" . self::SIG_KEY_VERSION . "&rankToken=$this->rankToken")[1];
     }
 
     /**
@@ -1385,7 +1405,7 @@ class Instagram
      */
     public function getUserFollowers($usernameId, $maxid = null)
     {
-        return $this->request("friendships/$usernameId/followers/?max_id=$maxid&ig_sig_key_version=" . self::SIG_KEY_VERSION . "&rank_token=$this->rank_token")[1];
+        return $this->request("friendships/$usernameId/followers/?max_id=$maxid&ig_sig_key_version=" . self::SIG_KEY_VERSION . "&rankToken=$this->rankToken")[1];
     }
 
     /**
@@ -1396,7 +1416,7 @@ class Instagram
      */
     public function getSelfUserFollowers()
     {
-        return $this->getUserFollowers($this->username_id);
+        return $this->getUserFollowers($this->usernameId);
     }
 
     /**
@@ -1407,7 +1427,7 @@ class Instagram
      */
     public function getSelfUsersFollowing()
     {
-        return $this->request('friendships/following/?ig_sig_key_version=' . self::SIG_KEY_VERSION . "&rank_token=$this->rank_token")[1];
+        return $this->request('friendships/following/?ig_sig_key_version=' . self::SIG_KEY_VERSION . "&rankToken=$this->rankToken")[1];
     }
 
     /**
@@ -1423,7 +1443,7 @@ class Instagram
     {
         $data = json_encode([
             '_uuid' => $this->uuid,
-            '_uid' => $this->username_id,
+            '_uid' => $this->usernameId,
             '_csrftoken' => $this->token,
             'media_id' => $mediaId,
         ]);
@@ -1444,7 +1464,7 @@ class Instagram
     {
         $data = json_encode([
             '_uuid' => $this->uuid,
-            '_uid' => $this->username_id,
+            '_uid' => $this->usernameId,
             '_csrftoken' => $this->token,
             'media_id' => $mediaId,
         ]);
@@ -1479,7 +1499,7 @@ class Instagram
     {
         $data = json_encode([
             '_uuid' => $this->uuid,
-            '_uid' => $this->username_id,
+            '_uid' => $this->usernameId,
             'first_name' => $name,
             'phone_number' => $phone,
             '_csrftoken' => $this->token,
@@ -1526,7 +1546,7 @@ class Instagram
     {
         $data = json_encode([
             '_uuid' => $this->uuid,
-            '_uid' => $this->username_id,
+            '_uid' => $this->usernameId,
             'user_id' => $userId,
             '_csrftoken' => $this->token,
         ]);
@@ -1546,7 +1566,7 @@ class Instagram
     {
         $data = json_encode([
             '_uuid' => $this->uuid,
-            '_uid' => $this->username_id,
+            '_uid' => $this->usernameId,
             'user_id' => $userId,
             '_csrftoken' => $this->token,
         ]);
@@ -1566,7 +1586,7 @@ class Instagram
     {
         $data = json_encode([
             '_uuid' => $this->uuid,
-            '_uid' => $this->username_id,
+            '_uid' => $this->usernameId,
             'user_id' => $userId,
             '_csrftoken' => $this->token,
         ]);
@@ -1586,7 +1606,7 @@ class Instagram
     {
         $data = json_encode([
             '_uuid' => $this->uuid,
-            '_uid' => $this->username_id,
+            '_uid' => $this->usernameId,
             'user_id' => $userId,
             '_csrftoken' => $this->token,
         ]);
@@ -1606,7 +1626,7 @@ class Instagram
     {
         $data = json_encode([
             '_uuid' => $this->uuid,
-            '_uid' => $this->username_id,
+            '_uid' => $this->usernameId,
             'user_id' => $userId,
             '_csrftoken' => $this->token,
         ]);

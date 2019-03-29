@@ -2,50 +2,69 @@
 
 namespace GhoSter\AutoInstagramPost\Model;
 
+use Magento\Catalog\Model\Product;
+use Magento\Framework\App\Filesystem\DirectoryList;
+use GhoSter\AutoInstagramPost\Helper\Data as InstagramHelper;
+use GhoSter\AutoInstagramPost\Model\Config as InstagramConfig;
+
 class ImageProcessor
 {
 
-    /**
-     * @var \GhoSter\AutoInstagramPost\Helper\Data
+    /** 
+     * @var InstagramConfig
      */
-    protected $_helper;
+    protected $config;
+    
+    /**
+     * @var InstagramHelper
+     */
+    protected $instagramHelper;
 
     /**
-     * @var \Magento\Framework\App\Filesystem\DirectoryList
+     * @var DirectoryList
      */
-    protected $_directoryList;
+    protected $directoryList;
 
-    protected $_image;
+    protected $productHasImage = false;
 
-
+    /**
+     * ImageProcessor constructor.
+     *
+     * @param Config $config
+     * @param InstagramHelper $instagramHelper
+     * @param DirectoryList $directoryList
+     */
     public function __construct(
-        \GhoSter\AutoInstagramPost\Helper\Data $helper,
-        \Magento\Framework\App\Filesystem\DirectoryList $directoryList
+        InstagramConfig $config,
+        InstagramHelper $instagramHelper,
+        DirectoryList $directoryList
 
     )
     {
-        $this->_helper = $helper;
-        $this->_directoryList = $directoryList;
+        $this->config = $config;
+        $this->instagramHelper = $instagramHelper;
+        $this->directoryList = $directoryList;
     }
 
     /**
      * Get Base Image from Product
      *
-     * @param $product \Magento\Catalog\Model\Product
+     * @param $product Product
      * @return string
      * @throws \Magento\Framework\Exception\FileSystemException
      */
     public function getBaseImage($product)
     {
-
         if ($product->getImage() !== 'no_selection') {
             $baseImage = $product->getImage();
         } else {
             $baseImage = $product->getSmallImage();
         }
 
+        $this->productHasImage = $product->getImage() || $product->getSmallImage();
+
         if (!$baseImage) {
-            return $this->_helper->getDefaultImage();
+            return $this->config->getDefaultImage();
         }
 
         return $baseImage;
@@ -61,7 +80,15 @@ class ImageProcessor
     public function processBaseImage($product)
     {
         $baseImage = $this->getBaseImage($product);
-        $baseDir = $this->_directoryList->getPath('media') . DIRECTORY_SEPARATOR . 'catalog' . DIRECTORY_SEPARATOR . 'product';
+
+        if($this->productHasImage) {
+            $baseDir = $this->directoryList->getPath('media') .
+                DIRECTORY_SEPARATOR . 'catalog' .
+                DIRECTORY_SEPARATOR . 'product';
+        } else {
+            $baseDir = '';
+        }
+
 
         if ($baseImage) {
             $imageDir = $baseDir . $baseImage;
@@ -81,7 +108,12 @@ class ImageProcessor
                     $imageSize = 800;
                 }
 
-                return $this->_helper->getResizeImage($imageDir, $baseImage, $imageSize);
+                return $this->instagramHelper
+                    ->getResizeImage(
+                        $imageDir,
+                        $baseImage,
+                        $imageSize
+                    );
             }
         }
 

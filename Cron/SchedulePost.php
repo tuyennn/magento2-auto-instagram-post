@@ -91,12 +91,13 @@ class SchedulePost
         try {
 
             $collection = $this->productCollection
+                ->addAttributeToSelect('*')
                 ->addAttributeToFilter(
-                    'posted_toinstagram',
+                    'posted_to_instagram',
                     [
                         'or' => [
-                            0 => ['is' => 0],
-                            1 => ['is' => new \Zend_Db_Expr('null')],
+                            0 => ['eq' => 0],
+                            1 => ['is' => new \Zend_Db_Expr('NULL')],
                         ]
                     ],
                     'left'
@@ -104,67 +105,70 @@ class SchedulePost
 
             $collection->getSelect()->limit($limit);
 
-            if (!empty($this->account)
-                && isset($this->account['username'])
-                && isset($this->account['password'])) {
-                $this->getInstagram()
-                    ->setUser(
-                        $this->account['username'],
-                        $this->account['password']
-                    );
-            }
+            if($collection->count() > 0) {
+                if (!empty($this->account)
+                    && isset($this->account['username'])
+                    && isset($this->account['password'])) {
+                    $this->getInstagram()
+                        ->setUser(
+                            $this->account['username'],
+                            $this->account['password']
+                        );
+                }
 
-            foreach ($collection as $product) {
+                foreach ($collection as $product) {
 
-                $image = $this->imageProcessor->processBaseImage($product);
+                    $image = $this->imageProcessor->processBaseImage($product);
 
-                if ($image) {
+                    if ($image) {
 
-                    $caption = $this->instagramHelper
-                        ->getInstagramPostDescription($product);
+                        $caption = $this->instagramHelper
+                            ->getInstagramPostDescription($product);
 
-                    try {
+                        try {
 
-                        $result = $this->getInstagram()
-                            ->uploadPhoto(
-                                $image,
-                                $caption
-                            );
+                            $result = $this->getInstagram()
+                                ->uploadPhoto(
+                                    $image,
+                                    $caption
+                                );
 
-                        if (empty($result)) {
-                            $this->logger->recordInstagramLog(
-                                $product,
-                                [],
-                                InstagramItem::TYPE_ERROR
-                            );
+                            if (empty($result)) {
+                                $this->logger->recordInstagramLog(
+                                    $product,
+                                    [],
+                                    InstagramItem::TYPE_ERROR
+                                );
+                            }
+
+                            if ($result['status'] === Instagram::STATUS_FAIL) {
+                                $this->logger->recordInstagramLog(
+                                    $product,
+                                    $result,
+                                    InstagramItem::TYPE_ERROR
+                                );
+
+                            }
+
+                            if ($result['status'] === Instagram::STATUS_OK) {
+                                $this->logger->recordInstagramLog(
+                                    $product,
+                                    $result,
+                                    InstagramItem::TYPE_SUCCESS
+                                );
+
+                            }
+
+
+                        } catch (\Exception $e) {
+
                         }
-
-                        if ($result['status'] === Instagram::STATUS_FAIL) {
-                            $this->logger->recordInstagramLog(
-                                $product,
-                                $result,
-                                InstagramItem::TYPE_ERROR
-                            );
-
-                        }
-
-                        if ($result['status'] === Instagram::STATUS_OK) {
-                            $this->logger->recordInstagramLog(
-                                $product,
-                                $result,
-                                InstagramItem::TYPE_SUCCESS
-                            );
-
-                        }
-
-
-                    } catch (\Exception $e) {
-
                     }
                 }
             }
 
         } catch (\Exception $e) {
+
         }
 
         return;
