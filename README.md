@@ -6,7 +6,7 @@ This Magento 2 extension Auto Instagram Post allows you add your products immedi
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/bf0757d0063e489eb3bff2479964fce2)](https://www.codacy.com/app/GhoSterInc/AutoInstagramPost?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=tuyennn/AutoInstagramPost&amp;utm_campaign=Badge_Grade)
 [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.me/thinghost)
-![Version 1.1.2](https://img.shields.io/badge/Version-1.1.2-green.svg)
+![Version 1.1.3](https://img.shields.io/badge/Version-1.1.3-green.svg)
 
 ---
 ## [![Alt GhoSter](http://thinghost.info/wp-content/uploads/2015/12/ghoster.png "thinghost.info")](http://thinghost.info) Overview
@@ -31,15 +31,20 @@ This Magento 2 extension Auto Instagram Post allows you add your products immedi
 ## Configure and Manage
 
 * Enable Auto Instagram - Enable or disable module.
-* Username - Your Instagram Username.
+* Username(Instagram Account) - Your Instagram Username.
 * Password - Your Instagram Password.
+* Test Connection - Test your current account.
 * Default Image - When you add a product without a main Image to store, this image will be uploaded to Insragram.
 * Allow auto posting to Instagram after Saving Product - Enable Observer after product saved
-* Enable Auto Hashtag and Description on Instagram Post - Enable below options
-* Enable Auto Product Description - This will add product description to your feature post.
-* Enable Custom Hashtag - Your custom hashtags go there.
-* Enable Auto Categories name as Hashtag - This will add product category as hashtag to your feature post.
-* Instagram Post Description Template - This will define the order of content which you want to post.
+* Enable Auto Hashtag and Description - Enable below options while posting product to Instagram.
+* Add Product Description to Post - This will add product description to your feature post.
+* Add Categories Name as Hashtags - This will add product category as hashtag to your feature post.
+* Add Custom Hashtags - Your custom hashtags go there.
+* Description Template - This will define the order of content which you want to post.
+* Enable Scheduled Auto Post - Setup cron for Scheduled Post to Instagram
+* Start Time - Time for Cron.
+* Frequency - Frequency for Cron.
+* Limit Number of Posts - Limit for 1 time cron runs.
 
 ## Installation with Composer
 
