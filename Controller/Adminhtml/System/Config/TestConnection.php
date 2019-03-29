@@ -5,7 +5,9 @@ namespace GhoSter\AutoInstagramPost\Controller\Adminhtml\System\Config;
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
 use Magento\Framework\Controller\Result\JsonFactory;
-
+use GhoSter\AutoInstagramPost\Model\Instagram;
+use GhoSter\AutoInstagramPost\Model\Config as InstagramConfig;
+use Psr\Log\LoggerInterface;
 
 class TestConnection extends Action
 {
@@ -13,32 +15,46 @@ class TestConnection extends Action
     protected $resultJsonFactory;
 
     /**
-     * @var \GhoSter\AutoInstagramPost\Model\Instagram
+     * @var Instagram
      */
     protected $_instagram;
 
-    /**
-     * @var \GhoSter\AutoInstagramPost\Helper\Data
-     */
-    protected $_instagramHelper;
+
+    /** @var InstagramConfig */
+    protected $config;
 
     /**
-     * @var \Psr\Log\LoggerInterface
+     * @var LoggerInterface
      */
-    private $_logger;
+    private $logger;
 
+    /**
+     * @var array
+     */
+    private $account = [];
+
+    /**
+     * TestConnection constructor.
+     *
+     * @param Context $context
+     * @param JsonFactory $resultJsonFactory
+     * @param Instagram $instagram
+     * @param InstagramConfig $config
+     * @param LoggerInterface $logger
+     */
     public function __construct(
         Context $context,
         JsonFactory $resultJsonFactory,
-        \GhoSter\AutoInstagramPost\Model\Instagram $instagram,
-        \GhoSter\AutoInstagramPost\Helper\Data $instagramHelper,
-        \Psr\Log\LoggerInterface $logger
+        Instagram $instagram,
+        InstagramConfig $config,
+        LoggerInterface $logger
     )
     {
         $this->resultJsonFactory = $resultJsonFactory;
         $this->_instagram = $instagram;
-        $this->_instagramHelper = $instagramHelper;
-        $this->_logger = $logger;
+        $this->config = $config;
+        $this->logger = $logger;
+        $this->account = $this->config->getAccountInformation();
         parent::__construct($context);
     }
 
@@ -54,14 +70,18 @@ class TestConnection extends Action
         /** @var \Magento\Framework\Controller\Result\Json $result */
         $result = $this->resultJsonFactory->create();
 
-        $account = $this->_instagramHelper->getAccountInformation();
-
-        $instagram = $this->getInstagram();
-
         try {
 
-            if (!empty($account) && isset($account['username']) && isset($account['password'])) {
-                $instagram->setUser($account['username'], $account['password']);
+            if (!empty($this->account)
+                && isset($this->account['username'])
+                && isset($this->account['password'])) {
+
+                $this->getInstagram()
+                    ->setUser(
+                        $this->account['username'],
+                        $this->account['password']
+                    );
+
             } else {
                 $responseData = [
                     'success' => false,
@@ -71,7 +91,7 @@ class TestConnection extends Action
                 return $result->setData($responseData);
             }
 
-            if (!$instagram->login()) {
+            if (!$this->getInstagram()->login()) {
                 $responseData = [
                     'success' => false,
                     'message' => __('Unauthorized Instagram Account, check your user/password settings')
@@ -95,11 +115,9 @@ class TestConnection extends Action
     }
 
     /**
-     * Get Instagram Client
-     *
-     * @return \GhoSter\AutoInstagramPost\Model\Instagram
+     * @return Instagram
      */
-    private function getInstagram()
+    public function getInstagram(): Instagram
     {
         return $this->_instagram;
     }

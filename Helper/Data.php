@@ -3,403 +3,269 @@
 namespace GhoSter\AutoInstagramPost\Helper;
 
 use Magento\Framework\App\Helper\AbstractHelper;
-use Magento\Store\Model\Store;
-use Magento\Framework\Encryption\EncryptorInterface as Encryptor;
+use Magento\Catalog\Model\Product;
 use Magento\Catalog\Model\ProductFactory;
-use Magento\Catalog\Model\CategoryFactory;
-use Magento\Framework\Escaper;
-use GhoSter\AutoInstagramPost\Model\Serialize\Serializer;
+use Magento\Catalog\Model\ResourceModel\Category\Collection as CategoryCollection;
+use Magento\Catalog\Model\ResourceModel\Category\CollectionFactory as CategoryCollectionFactory;
+use Magento\Framework\App\Filesystem\DirectoryList;
+use Magento\Framework\Filesystem;
+use GhoSter\AutoInstagramPost\Model\Config as InstagramConfig;
+use Psr\Log\LoggerInterface;
 
 class Data extends AbstractHelper
 {
 
-    const XML_PATH_ENABLED_MODULE = 'auto_instagram_post/general/enable';
-    const XML_PATH_INSTAGRAM_USER = 'auto_instagram_post/general/username';
-    const XML_PATH_INSTAGRAM_PASSWORD = 'auto_instagram_post/general/password';
-    const XML_PATH_DEFAULT_IMAGE = 'auto_instagram_post/general/upload_image_id';
-    const XML_PATH_ENABLE_OBSERVER = 'auto_instagram_post/general/enable_observer';
-
-    const XML_PATH_ENABLE_HASHTAG_DESCRIPTION = 'auto_instagram_post/comment_hashtag/enable';
-    const XML_PATH_ENABLE_PRODUCT_DESCRIPTION = 'auto_instagram_post/comment_hashtag/product_description';
-    const XML_PATH_ENABLE_CATEGORY_HASHTAG = 'auto_instagram_post/comment_hashtag/category_hashtag';
-    const XML_PATH_ENABLE_CUSTOM_HASHTAG = 'auto_instagram_post/comment_hashtag/enable_custom';
-    const XML_PATH_CUSTOM_HASHTAG = 'auto_instagram_post/comment_hashtag/hashtag';
-    const XML_PATH_DESCRIPTION_TEMPLATE = 'auto_instagram_post/comment_hashtag/description_template';
-    const XML_INSTAGRAM_CHARACTER_LIMIT = 2200;
-    const XML_INSTAGRAM_HASHTAG_LIMIT = 30;
-    const XML_CATEGORY_HASHTAG_LIMIT = 10;
+    const DEFAULT_INSTAGRAM_CHARACTER_LIMIT = 2200;
+    const DEFAULT_INSTAGRAM_HASHTAG_LIMIT = 30;
+    const DEFAULT_CATEGORY_HASHTAG_LIMIT = 10;
     const SPACE_STRING = ' ';
 
+    /** @var DirectoryList */
+    protected $directoryList;
 
-    /**
-     * Store manager
-     *
-     * @var \Magento\Store\Model\StoreManagerInterface
-     */
-    protected $_storeManager;
+    /** @var Filesystem\Directory\WriteInterface */
+    protected $mediaWriteDirectory;
 
-    /**
-     * @var \Magento\Framework\Encryption\EncryptorInterface
-     */
-    protected $_encryptor;
+    /** @var Filesystem */
+    protected $filesystem;
 
-    /**
-     * @var \Magento\Framework\App\Filesystem\DirectoryList
-     */
-    protected $directory_list;
+    /** @var \Magento\Framework\Image\AdapterFactory */
+    protected $imageFactory;
 
-    /**
-     * @var \Magento\Framework\Filesystem $filesystem
-     */
-    protected $_filesystem;
-
-    /**
-     * @var \Magento\Framework\Image\AdapterFactory
-     */
-    protected $_imageFactory;
-
-    /**
-     * @var ProductFactory
-     */
+    /** @var ProductFactory */
     protected $productFactory;
 
     /**
-     * @var CategoryFactory
+     * @var CategoryCollectionFactory
      */
-    protected $categoryFactory;
+    protected $categoryCollectionFactory;
+
+    /** @var InstagramConfig */
+    protected $config;
+
+    /** @var LoggerInterface */
+    protected $logger;
 
     /**
-     * @var Escaper
+     * Data constructor.
+     * @param \Magento\Framework\App\Helper\Context $context
+     * @param DirectoryList $directoryList
+     * @param Filesystem $filesystem
+     * @param \Magento\Framework\Image\AdapterFactory $imageFactory
+     * @param ProductFactory $productFactory
+     * @param CategoryCollectionFactory $categoryCollectionFactory
+     * @param InstagramConfig $config
+     * @param LoggerInterface $logger
+     * @throws \Magento\Framework\Exception\FileSystemException
      */
-    protected $_escaper;
-
-    /**
-     * @var Serializer
-     */
-    protected $_serializer;
-
     public function __construct(
         \Magento\Framework\App\Helper\Context $context,
-        \Magento\Store\Model\StoreManagerInterface $storeManager,
-        \Magento\Framework\App\Filesystem\DirectoryList $directory_list,
-        \Magento\Framework\Filesystem $filesystem,
+        DirectoryList $directoryList,
+        Filesystem $filesystem,
         \Magento\Framework\Image\AdapterFactory $imageFactory,
-        Encryptor $encryptor,
-        Escaper $_escaper,
         ProductFactory $productFactory,
-        CategoryFactory $categoryFactory,
-        Serializer $serializer
+        CategoryCollectionFactory $categoryCollectionFactory,
+        InstagramConfig $config,
+        LoggerInterface $logger
     )
     {
-        $this->_storeManager = $storeManager;
-        $this->_encryptor = $encryptor;
-        $this->directory_list = $directory_list;
-        $this->_filesystem = $filesystem;
-        $this->_imageFactory = $imageFactory;
+        $this->directoryList = $directoryList;
+        $this->filesystem = $filesystem;
+        $this->imageFactory = $imageFactory;
         $this->productFactory = $productFactory;
-        $this->categoryFactory = $categoryFactory;
-        $this->_escaper = $_escaper;
-        $this->_serializer = $serializer;
+        $this->categoryCollectionFactory = $categoryCollectionFactory;
+        $this->config = $config;
+        $this->mediaWriteDirectory = $filesystem->getDirectoryWrite(DirectoryList::MEDIA);
+        $this->logger = $logger;
         parent::__construct($context);
     }
 
     /**
-     * How to resize Your image before upload to Instagram
+     * Resize befor uploading
      *
      * @param $imageDir
-     * @param null $image
+     * @param $image
      * @param $width
      * @param null $height
      * @param int $quality
-     * @return mixed|string
+     * @return bool|string
      * @throws \Magento\Framework\Exception\FileSystemException
      */
-    public function getResizeImage($imageDir, $image = null, $width, $height = null, $quality = 100)
+    public function getResizeImage(
+        $imageDir,
+        $image,
+        $width,
+        $height = null,
+        $quality = 100
+    )
     {
 
         if ($height) {
-            $imageResized = $this->directory_list->getPath('media')
+            $imageResizedDir = $this->directoryList->getPath('media')
                 . DIRECTORY_SEPARATOR . 'catalog'
                 . DIRECTORY_SEPARATOR . 'product'
-                . DIRECTORY_SEPARATOR . 'product_resized'
-                . DIRECTORY_SEPARATOR . $width . 'x' . $height . $image;
+                . DIRECTORY_SEPARATOR . 'instagram_processed'
+                . DIRECTORY_SEPARATOR . $width . 'x' . $height;
         } else {
-            $imageResized = $this->directory_list->getPath('media')
+            $imageResizedDir = $this->directoryList->getPath('media')
                 . DIRECTORY_SEPARATOR . 'catalog'
                 . DIRECTORY_SEPARATOR . 'product'
-                . DIRECTORY_SEPARATOR . 'product_resized'
-                . DIRECTORY_SEPARATOR . $width . $image;
+                . DIRECTORY_SEPARATOR . 'instagram_processed'
+                . DIRECTORY_SEPARATOR . $width;
         }
-        if (!file_exists($imageResized)):
-            $imageObj = $this->_imageFactory->create();
-            $imageObj->open($imageDir);
-            $imageObj->constrainOnly(true);
-            $imageObj->keepAspectRatio(true);
-            $imageObj->keepFrame(true);
-            $imageObj->backgroundColor(array(255, 255, 255));
-            $imageObj->resize($width, $height);
-            $imageObj->save($imageResized);
-        endif;
 
-        if (file_exists($imageResized)) {
-            $imageExts = explode('.', $imageResized);
-            if (strtolower($imageExts[count($imageExts) - 1]) == 'png') {
-                $realPng = $imageResized;
-                $imageResized = str_replace(array('.png', '.Png', '.pNg', '.pnG', '.PNg', '.PnG', '.pNG', '.PNG'), '.jpg', $imageResized);
-                if (!file_exists($imageResized)) {
-                    $jpgImage = imagecreatefrompng($realPng);
-                    $bg = imagecreatetruecolor(imagesx($jpgImage), imagesy($jpgImage));
-                    imagefill($bg, 0, 0, imagecolorallocate($bg, 255, 255, 255));
-                    imagealphablending($bg, TRUE);
-                    imagecopy($bg, $jpgImage, 0, 0, 0, 0, imagesx($jpgImage), imagesy($jpgImage));
-                    imagedestroy($jpgImage);
-                    imagejpeg($bg, $imageResized, $quality);
-                    imagedestroy($bg);
-                }
+        $imageResized = $imageResizedDir . $image;
+
+        try {
+
+            if (!file_exists($imageResized)) {
+                $this->_generateInstagramImage(
+                    $imageResized,
+                    $imageDir,
+                    $width,
+                    $height
+                );
             }
 
-            return $imageResized;
+            if (file_exists($imageResized)) {
+                $extOriginal = strtolower(pathinfo($image, PATHINFO_EXTENSION));
 
-        } else {
-            return '';
-        }
-    }
+                if (!in_array($extOriginal, ['jpg', 'jpeg'])) {
+                    $wrongImageFormat = $imageResized;
 
+                    $imageResized = $imageResizedDir . str_replace($extOriginal, '.jpg', $image);
 
-    /**
-     * Check if module enabled
-     *
-     * @param null|string|bool|int|Store $store
-     * @return bool
-     */
+                    $this->_convertWrongFormatImage(
+                        $imageResized,
+                        $wrongImageFormat,
+                        $extOriginal,
+                        $quality
+                    );
+                }
 
-    public function isModuleEnabled($store = null)
-    {
-        if (empty($this->getUsernameInfo($store)) || empty($this->getPwdInfo($store))) {
+                return $imageResized;
+            }
+
+            return false;
+
+        } catch (\Magento\Framework\Exception\FileSystemException $e) {
+            $this->logger->critical($e);
             return false;
         }
 
-        return (bool)$this->scopeConfig->getValue(
-            self::XML_PATH_ENABLED_MODULE,
-            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
-            $store
-        );
     }
 
     /**
-     * Get Account Information from Configuration
+     * Generate Image
      *
-     * @param null|string|bool|int|Store $store
-     * @return array
+     * @param $imageResizedPath
+     * @param $imageDir
+     * @param $width
+     * @param $height
      */
-    public function getAccountInformation($store = null)
-    {
-        if (empty($this->getUsernameInfo($store)) || empty($this->getPwdInfo($store))) {
-            return null;
+    private function _generateInstagramImage(
+        $imageResizedPath,
+        $imageDir,
+        $width,
+        $height
+    ){
+        try {
+
+            $image = $this->imageFactory->create();
+            $image->open($imageDir);
+            $image->constrainOnly(true);
+            $image->keepAspectRatio(true);
+            $image->keepFrame(true);
+            $image->backgroundColor(array(255, 255, 255));
+            $image->resize($width, $height);
+            $image->save($imageResizedPath);
+
+        } catch (\Exception $e) {
+
         }
 
-        return [
-            'username' => $this->getUsernameInfo($store),
-            'password' => $this->getPwdInfo($store)
-        ];
+        return;
+
     }
 
     /**
-     * Get Username
-     * @param null $store
-     * @return mixed
-     */
-    public function getUsernameInfo($store = null)
-    {
-        return $this->scopeConfig->getValue(
-            self::XML_PATH_INSTAGRAM_USER,
-            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
-            $store);
-    }
-
-    /**
-     * Get Password
+     * Convert Non JPG format
      *
-     * @param null $store
-     * @return mixed
+     * @param $convertedImage
+     * @param $sourceImage
+     * @param $imageExt
+     * @param int $quality
      */
-    public function getPwdInfo($store = null)
+    private function _convertWrongFormatImage(
+        $convertedImage,
+        $sourceImage,
+        $imageExt,
+        $quality = 100
+    )
     {
-        return $this->scopeConfig->getValue(
-            self::XML_PATH_INSTAGRAM_PASSWORD,
-            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
-            $store);
-    }
 
-    /**
-     * Get Default Image URL Path
-     *
-     * @param null $store
-     * @return string
-     * @throws \Magento\Framework\Exception\FileSystemException
-     */
-    public function getDefaultImage($store = null)
-    {
-        $uploadDir = \GhoSter\AutoInstagramPost\Model\Config\Backend\Image::UPLOAD_DIR;
-
-        $image = $this->scopeConfig->getValue(
-            self::XML_PATH_DEFAULT_IMAGE,
-            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
-            $store);
-
-        if (!$image) {
-            return '';
-        }
-
-        $imagePath = $this->directory_list->getPath('media')
-            . DIRECTORY_SEPARATOR . $uploadDir
-            . DIRECTORY_SEPARATOR . $image;
-
-        return $imagePath;
-    }
-
-    /**
-     * Auto Observer after product saved
-     *
-     * @param null $store
-     * @return bool
-     */
-    public function isObserverEnabled($store = null)
-    {
-        return (bool)$this->scopeConfig->getValue(
-            self::XML_PATH_ENABLE_OBSERVER,
-            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
-            $store
-        );
-    }
-
-    /**
-     * Check if Hashtag was enabled
-     *
-     * @param null $store
-     * @return mixed
-     */
-    public function isEnableHashtag($store = null)
-    {
-        return (bool)$this->scopeConfig->getValue(
-            self::XML_PATH_ENABLE_HASHTAG_DESCRIPTION,
-            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
-            $store
-        );
-    }
-
-
-    /**
-     * Check if Custom Hashtag was enabled
-     *
-     * @param null $store
-     * @return mixed
-     */
-    public function isEnableCustomHashtag($store = null)
-    {
-        return (bool)$this->scopeConfig->getValue(
-            self::XML_PATH_ENABLE_CUSTOM_HASHTAG,
-            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
-            $store
-        );
-    }
-
-    /**
-     * Check if Hashtag follows Parent Category
-     * @param null $store
-     * @return mixed
-     */
-    public function isEnableCategoryHashtag($store = null)
-    {
-        return (bool)$this->scopeConfig->getValue(
-            self::XML_PATH_ENABLE_CATEGORY_HASHTAG,
-            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
-            $store
-        );
-    }
-
-    /**
-     * Check if Caption included Product Desc
-     *
-     * @param null $store
-     * @return mixed
-     */
-    public function isEnableProductDescription($store = null)
-    {
-        return (bool)$this->scopeConfig->getValue(
-            self::XML_PATH_ENABLE_PRODUCT_DESCRIPTION,
-            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
-            $store
-        );
-    }
-
-    /**
-     * Get Custom Tags
-     *
-     * @param null $store
-     * @return string
-     */
-    public function getCustomHashHashtags($store = null)
-    {
-        $hashTagsStripped = [];
-        $html = '';
-
-        $hashTagConfig = $this->scopeConfig->getValue(
-            self::XML_PATH_CUSTOM_HASHTAG,
-            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
-            $store
-        );
-
-        if ($hashTagConfig && $this->isEnableHashtag() && $this->isEnableCustomHashtag()) {
-            $hashTags = $this->_serializer->unserialize($hashTagConfig);
-
-            if (is_array($hashTags)) {
-                foreach ($hashTags as $key => $hashTag) {
-                    $hashTagsStripped[$key]['hashtag'] = strtolower(preg_replace('/\s+/', '', $hashTag['hashtag']));
-                    $hashTagsStripped[$key]['status'] = $hashTag['status'];
-
-                }
+        if (!file_exists($convertedImage)) {
+            switch ($imageExt) {
+                case 'jpg':
+                case 'jpeg':
+                    $jpgImage = imagecreatefromjpeg($sourceImage);
+                    break;
+                case 'png':
+                    $jpgImage = imagecreatefrompng($sourceImage);
+                    break;
+                case 'gif':
+                    $jpgImage = imagecreatefromgif($sourceImage);
+                    break;
+                case 'bmp':
+                    $jpgImage = imagecreatefrombmp($sourceImage);
+                    break;
             }
-        }
 
-        if (!empty($hashTagsStripped)) {
-            foreach ($hashTagsStripped as $hashTag) {
-                if ($hashTag['status']) {
-                    $html .= '#' . $hashTag['hashtag'] . self::SPACE_STRING;
-                }
-            }
+            $trueColorImage = imagecreatetruecolor(imagesx($jpgImage), imagesy($jpgImage));
+            imagefill($trueColorImage, 0, 0, imagecolorallocate($trueColorImage, 255, 255, 255));
+            imagealphablending($trueColorImage, true);
+            imagecopy($trueColorImage, $jpgImage, 0, 0, 0, 0, imagesx($jpgImage), imagesy($jpgImage));
+            imagedestroy($jpgImage);
+            imagejpeg($trueColorImage, $convertedImage, $quality);
+            imagedestroy($trueColorImage);
         }
-
-        return $html;
     }
 
     /**
      * Get Category Tags
      *
-     * @param $_product \Magento\Catalog\Model\Product
+     * @param $product Product
      * @return string
      */
-    public function getCategoriesHashtags($_product)
+    public function getCategoriesHashtagsHtml($product)
     {
-
-        $hashTagsStripped = [];
         $html = '';
 
-        if ($this->isEnableCategoryHashtag() && $this->isEnableHashtag()) {
+        $hashTagsStrippedData = [];
 
-            $categoryIds = $_product->getCategoryIds();
-            $i = 1;
-            if (count($categoryIds)) {
-                foreach ($categoryIds as $categoryId) {
-                    $_category = $this->categoryFactory->create()->load($categoryId);
-                    $hashTagsStripped[] = strtolower(preg_replace('/\s+/', '', $_category->getName()));
-                    if ($i++ == self::XML_CATEGORY_HASHTAG_LIMIT) break;
+        if ($this->config->isEnableCategoryHashtag() && $this->config->isEnableHashtag()) {
+
+            try {
+
+                /** @var $collection CategoryCollection */
+                $collection = $this->categoryCollectionFactory->create();
+                $collection->addAttributeToFilter('entity_id', $product->getCategoryIds());
+                $collection->addNameToResult();
+
+                $i = 1;
+                foreach ($collection as $category) {
+                    $hashTagsStrippedData[] = strtolower(preg_replace('/\s+/', '', $category->getName()));
+                    if ($i++ == self::DEFAULT_CATEGORY_HASHTAG_LIMIT) break;
                 }
+
+            } catch (\Exception $e) {
+
             }
+
         }
 
-        if (!empty($hashTagsStripped)) {
-            foreach ($hashTagsStripped as $hashTag) {
+        if (!empty($hashTagsStrippedData)) {
+            foreach ($hashTagsStrippedData as $hashTag) {
                 $html .= '#' . $hashTag . self::SPACE_STRING;
             }
         }
@@ -409,58 +275,45 @@ class Data extends AbstractHelper
 
 
     /**
-     * @param $_product \Magento\Catalog\Model\Product
+     * @param $product Product
      * @return string
      */
-    public function getProductDescription($_product)
+    public function getProductDescription($product)
     {
-        return strip_tags($_product->getDescription());
-    }
-
-    /**
-     * @param null $store
-     * @return array|string
-     */
-    public function getInstagramPostTemplate($store = null)
-    {
-        return $this->_escaper->escapeHtml($this->scopeConfig->getValue(
-            self::XML_PATH_DESCRIPTION_TEMPLATE,
-            \Magento\Store\Model\ScopeInterface::SCOPE_STORE,
-            $store
-        ));
+        return strip_tags($product->getDescription());
     }
 
 
     /**
      * Get Final Caption for Instagram Post
      *
-     * @param $_product \Magento\Catalog\Model\Product
+     * @param $product Product
      * @return string
      */
-    public function getInstagramPostDescription($_product = null)
+    public function getInstagramPostDescription($product)
     {
         $html = '';
-        $stringTemplate = $this->getInstagramPostTemplate();
+        $stringTemplate = $this->config->getInstagramPostTemplate();
 
         if (preg_match_all("~\{\{\s*(.*?)\s*\}\}~", $stringTemplate, $matches)) {
-            if(isset($matches[1]) && is_array($matches[1])) {
+            if (isset($matches[1]) && is_array($matches[1])) {
                 foreach ($matches[1] as $key => $match) {
-                    $addOnSpace = $key !== 0 ? self::SPACE_STRING: '';
+                    $addOnSpace = $key !== 0 ? self::SPACE_STRING : '';
                     switch ($match) {
                         case 'CUSTOMHASTAG':
-                            $html .= $addOnSpace . $this->getCustomHashHashtags();
+                            $html .= $addOnSpace . $this->getCustomHashHashtagsHtml();
                             break;
                         case 'CATEGORYHASHTAG':
-                            $html .= $addOnSpace . $this->getCategoriesHashtags($_product);
+                            $html .= $addOnSpace . $this->getCategoriesHashtagsHtml($product);
                             break;
                         case 'PRODUCTDESC':
-                            $html .= $addOnSpace . $this->getProductDescription($_product);
+                            $html .= $addOnSpace . $this->getProductDescription($product);
                             break;
                         case 'PRODUCTNAME':
-                            $html .= $addOnSpace . $_product->getName();
+                            $html .= $addOnSpace . $product->getName();
                             break;
                         case 'PRODUCTLINK':
-                            $html .= $addOnSpace . $_product->getProductUrl();
+                            $html .= $addOnSpace . $product->getProductUrl();
                             break;
                         default:
                             break;
@@ -468,7 +321,30 @@ class Data extends AbstractHelper
                 }
             }
         } else {
-            $html .= $_product->getName();
+            $html .= $product->getName();
+        }
+
+        return $html;
+    }
+
+    /**
+     * Get Custom Tags
+     *
+     * @param null $store
+     * @return string
+     */
+    public function getCustomHashHashtagsHtml($store = null)
+    {
+        $html = '';
+
+        $hashTagsStripped = $this->config->getCustomHashHashtags();
+
+        if (!empty($hashTagsStripped)) {
+            foreach ($hashTagsStripped as $hashTag) {
+                if ($hashTag['status']) {
+                    $html .= '#' . $hashTag['hashtag'] . self::SPACE_STRING;
+                }
+            }
         }
 
         return $html;

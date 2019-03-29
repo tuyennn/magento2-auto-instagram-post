@@ -8,7 +8,7 @@
             <tab>ghoster</tab>
             <label>Auto Instagram Post</label>
             <resource>GhoSter_AutoInstagramPost::config</resource>
-            <group id="general" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="0">
+            <group id="general" translate="label" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="0">
                 <label>General Settings</label>
                 <field id="enable" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="0">
                     <label>Enable Auto Instagram</label>
@@ -56,17 +56,17 @@
                     </depends>
                 </field>
             </group>
-            <group id="comment_hashtag" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="0" showInStore="0">
-                <label>Comment and Hashtag Settings</label>
+            <group id="comment_hashtag" translate="label" sortOrder="20" showInDefault="1" showInWebsite="0" showInStore="0">
+                <label>Images Description Settings</label>
                 <field id="enable" translate="label" type="select" sortOrder="0" showInDefault="1" showInWebsite="0" showInStore="0">
-                    <label>Enable Auto Hashtag and Description on Insgram Post</label>
+                    <label>Enable Auto Hashtag and Description</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <depends>
                         <field id="*/general/enable">1</field>
                     </depends>
                 </field>
                 <field id="product_description" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="0">
-                    <label>Enable Auto Product Description as Instagram Post Description</label>
+                    <label>Add Product Description to Post</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <comment><![CDATA[Description on Instagram Post should be generated from product description]]></comment>
                     <depends>
@@ -75,7 +75,7 @@
                     </depends>
                 </field>
                 <field id="category_hashtag" translate="label" type="select" sortOrder="20" showInDefault="1" showInWebsite="0" showInStore="0">
-                    <label>Enable Auto Categories Name as Hashtag</label>
+                    <label>Add Categories Name as Hashtags</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <comment><![CDATA[Hashtag on Instagram Post should be generated from categories which product belongs]]></comment>
                     <depends>
@@ -84,7 +84,7 @@
                     </depends>
                 </field>
                 <field id="enable_custom" translate="label" type="select" sortOrder="20" showInDefault="1" showInWebsite="0" showInStore="0">
-                    <label>Enable Custom Hashtag</label>
+                    <label>Add Custom Hashtags</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <depends>
                         <field id="*/general/enable">1</field>
@@ -102,13 +102,44 @@
                         <field id="enable_custom">1</field>
                     </depends>
                 </field>
-                <field id="description_template" translate="label" type="textarea" sortOrder="50" showInDefault="1" showInWebsite="0" showInStore="0">
-                    <label>Instagram Post Description Template</label>
+                <field id="description_template" translate="label" type="textarea" sortOrder="50" showInDefault="1" showInWebsite="0" showInStore="0" canRestore="1">
+                    <label>Description Template</label>
                     <comment><![CDATA[{{CUSTOMHASTAG}} {{CATEGORYHASHTAG}} {{PRODUCTDESC}} {{PRODUCTNAME}}</br>Instagram caption character limit: 2,200 characters</br>Instagram hashtag limit: 30 hashtags</br>Instagram bio character limit: 150 characters]]></comment>
                     <depends>
                         <field id="*/general/enable">1</field>
                         <field id="enable">1</field>
                     </depends>
+                </field>
+            </group>
+            <group id="cron" translate="label" sortOrder="30" showInDefault="1" showInWebsite="0" showInStore="0">
+                <label>Scheduled Auto Post Settings</label>
+                <field id="enabled" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Enable Scheduled Auto Post</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <depends>
+                        <field id="*/general/enable">1</field>
+                    </depends>
+                </field>
+                <field id="time" translate="label" type="time" sortOrder="20" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Start Time</label>
+                    <depends>
+                        <field id="enabled">1</field>
+                    </depends>
+                </field>
+                <field id="frequency" translate="label" type="select" sortOrder="30" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Frequency</label>
+                    <depends>
+                        <field id="enabled">1</field>
+                    </depends>
+                    <source_model>Magento\Cron\Model\Config\Source\Frequency</source_model>
+                    <backend_model>GhoSter\AutoInstagramPost\Model\Config\Backend\Cron</backend_model>
+                </field>
+                <field id="limit" translate="label" type="text" sortOrder="40" showInDefault="1" showInWebsite="0" showInStore="0" canRestore="1">
+                    <label>Limit Number of Posts</label>
+                    <depends>
+                        <field id="enable">1</field>
+                    </depends>
+                    <validate>validate-zero-or-greater</validate>
                 </field>
             </group>
         </section>

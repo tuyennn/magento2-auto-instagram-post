@@ -2,25 +2,28 @@
 
 namespace GhoSter\AutoInstagramPost\Block\Adminhtml\System\Config;
 
-class Hashtag extends \Magento\Config\Block\System\Config\Form\Field\FieldArray\AbstractFieldArray
+use Magento\Config\Block\System\Config\Form\Field\FieldArray\AbstractFieldArray;
+use GhoSter\AutoInstagramPost\Block\Adminhtml\System\Config\Hashtag\Activation;
+
+class Hashtag extends AbstractFieldArray
 {
 
     /**
-     * @var $_attributesRenderer \GhoSter\AutoInstagramPost\Block\Adminhtml\System\Config\Hashtag\Activation
+     * @var $_attributesRenderer Activation
      */
     protected $_activation;
 
     /**
      * Get activation options.
      *
-     * @return \GhoSter\AutoInstagramPost\Block\Adminhtml\System\Config\Hashtag\Activation
+     * @return Activation
      * @throws \Magento\Framework\Exception\LocalizedException
      */
     protected function _getActivationRenderer()
     {
         if (!$this->_activation) {
             $this->_activation = $this->getLayout()->createBlock(
-                '\GhoSter\AutoInstagramPost\Block\Adminhtml\System\Config\Hashtag\Activation',
+                Activation::class,
                 '',
                 ['data' => ['is_render_to_js_template' => true]]
             );
@@ -34,7 +37,13 @@ class Hashtag extends \Magento\Config\Block\System\Config\Form\Field\FieldArray\
      */
     protected function _prepareToRender()
     {
-        $this->addColumn('hashtag', ['label' => __('Hashtag Value'), 'renderer' => false]);
+        $this->addColumn(
+            'hashtag',
+            [
+                'label' => __('Hashtag Value'),
+                'renderer' => false
+            ]
+        );
         $this->addColumn(
             'status',
             [
