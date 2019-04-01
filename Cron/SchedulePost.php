@@ -49,7 +49,7 @@ class SchedulePost
      */
     public function execute()
     {
-        if(!$this->config->isEnabled()) {
+        if(!$this->config->isEnabled() || !$this->config->isCronEnabled()) {
             return;
         }
 
