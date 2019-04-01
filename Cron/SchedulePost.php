@@ -49,6 +49,10 @@ class SchedulePost
      */
     public function execute()
     {
+        if(!$this->config->isEnabled()) {
+            return;
+        }
+
         $limit = $this->config->getCronLimit();
 
         if (!$limit) {
