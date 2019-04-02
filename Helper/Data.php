@@ -148,7 +148,7 @@ class Data extends AbstractHelper
 
             return false;
 
-        } catch (\Magento\Framework\Exception\FileSystemException $e) {
+        } catch (\Exception $e) {
             $this->logger->critical($e);
             return false;
         }
@@ -170,7 +170,7 @@ class Data extends AbstractHelper
         $height
     ){
         try {
-
+            /** @var $image \Magento\Framework\Image */
             $image = $this->imageFactory->create();
             $image->open($imageDir);
             $image->constrainOnly(true);
@@ -220,14 +220,16 @@ class Data extends AbstractHelper
                     $jpgImage = imagecreatefrombmp($sourceImage);
                     break;
             }
+            if(isset($jpgImage)) {
+                $trueColorImage = imagecreatetruecolor(imagesx($jpgImage), imagesy($jpgImage));
+                imagefill($trueColorImage, 0, 0, imagecolorallocate($trueColorImage, 255, 255, 255));
+                imagealphablending($trueColorImage, true);
+                imagecopy($trueColorImage, $jpgImage, 0, 0, 0, 0, imagesx($jpgImage), imagesy($jpgImage));
+                imagedestroy($jpgImage);
+                imagejpeg($trueColorImage, $convertedImage, $quality);
+                imagedestroy($trueColorImage);
+            }
 
-            $trueColorImage = imagecreatetruecolor(imagesx($jpgImage), imagesy($jpgImage));
-            imagefill($trueColorImage, 0, 0, imagecolorallocate($trueColorImage, 255, 255, 255));
-            imagealphablending($trueColorImage, true);
-            imagecopy($trueColorImage, $jpgImage, 0, 0, 0, 0, imagesx($jpgImage), imagesy($jpgImage));
-            imagedestroy($jpgImage);
-            imagejpeg($trueColorImage, $convertedImage, $quality);
-            imagedestroy($trueColorImage);
         }
     }
 
@@ -337,7 +339,7 @@ class Data extends AbstractHelper
     {
         $html = '';
 
-        $hashTagsStripped = $this->config->getCustomHashHashtags();
+        $hashTagsStripped = $this->config->getCustomHashHashtags($store);
 
         if (!empty($hashTagsStripped)) {
             foreach ($hashTagsStripped as $hashTag) {

@@ -4,17 +4,12 @@ namespace GhoSter\AutoInstagramPost\Controller\Adminhtml\Manage;
 
 use Magento\Backend\App\Action;
 use Magento\Framework\Exception\LocalizedException;
-use GhoSter\AutoInstagramPost\Model\Instagram;
 use GhoSter\AutoInstagramPost\Model\Instagram\Worker as InstagramWorker;
-use GhoSter\AutoInstagramPost\Model\Item as InstagramItem;
 use Magento\Catalog\Model\ProductFactory;
-use GhoSter\AutoInstagramPost\Model\ImageProcessor;
 use Magento\Framework\Exception\NotFoundException;
 use Magento\Ui\Component\MassAction\Filter;
 use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory;
-use GhoSter\AutoInstagramPost\Model\Logger as InstagramLogger;
 use GhoSter\AutoInstagramPost\Model\Config as InstagramConfig;
-use GhoSter\AutoInstagramPost\Helper\Data as InstagramHelper;
 
 
 class MassPost extends Action

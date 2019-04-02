@@ -163,7 +163,7 @@ class Config
      *
      * @param null $store
      * @return string
-     * @throws \Magento\Framework\Exception\FileSystemException
+     * @throws \Exception
      */
     public function getDefaultImage($store = null)
     {

@@ -2,25 +2,29 @@
 
 namespace GhoSter\AutoInstagramPost\Block\Adminhtml\System\Config\Hashtag;
 
-class Activation extends \Magento\Framework\View\Element\Html\Select
+use Magento\Framework\View\Element\Context;
+use Magento\Framework\View\Element\Html\Select;
+use Magento\Config\Model\Config\Source\Enabledisable;
+
+class Activation extends Select
 {
     /**
      * Model Enabledisable
      *
-     * @var \Magento\Config\Model\Config\Source\Enabledisable
+     * @var Enabledisable
      */
     protected $_enableDisable;
 
     /**
      * Activation constructor.
      *
-     * @param \Magento\Framework\View\Element\Context $context
-     * @param \Magento\Config\Model\Config\Source\Enabledisable $enableDisable $enableDisable
+     * @param Context $context
+     * @param Enabledisable $enableDisable
      * @param array $data
      */
     public function __construct(
-        \Magento\Framework\View\Element\Context $context,
-        \Magento\Config\Model\Config\Source\Enabledisable $enableDisable,
+        Context $context,
+        Enabledisable $enableDisable,
         array $data = []
     )
     {
@@ -31,7 +35,7 @@ class Activation extends \Magento\Framework\View\Element\Html\Select
 
     /**
      * @param string $value
-     * @return \GhoSter\AutoInstagramPost\Block\Adminhtml\System\Config\Hashtag\Activation
+     * @return $this
      */
     public function setInputName($value)
     {
