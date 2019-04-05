@@ -1,4 +1,5 @@
 <?php
+
 namespace GhoSter\AutoInstagramPost\Controller\Adminhtml\Manage;
 
 class Index extends \Magento\Catalog\Controller\Adminhtml\Product

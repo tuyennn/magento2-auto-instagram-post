@@ -25,8 +25,7 @@ class Logger
     public function __construct(
         ItemFactory $itemFactory,
         \Magento\Framework\Json\Helper\Data $jsonHelper
-    )
-    {
+    ) {
         $this->_itemFactory = $itemFactory;
         $this->_jsonHelper = $jsonHelper;
     }

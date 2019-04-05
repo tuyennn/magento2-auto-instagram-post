@@ -1,8 +1,11 @@
 <?php
+
 namespace GhoSter\AutoInstagramPost\Model\ResourceModel;
 
-class Item extends \Magento\Framework\Model\ResourceModel\Db\AbstractDb {
+use Magento\Framework\Model\ResourceModel\Db\AbstractDb;
 
+class Item extends AbstractDb
+{
 
     /**
      * @var \Magento\Framework\Stdlib\DateTime\DateTime

@@ -36,8 +36,7 @@ class SchedulePost
         InstagramConfig $config,
         InstagramWorker $instagramWorker,
         ProductCollectionFactory $productCollectionFactory
-    )
-    {
+    ) {
         $this->config = $config;
         $this->instagramWorker = $instagramWorker;
         $this->productCollection = $productCollectionFactory->create();
@@ -48,7 +47,7 @@ class SchedulePost
      */
     public function execute()
     {
-        if(!$this->config->isEnabled() || !$this->config->isCronEnabled()) {
+        if (!$this->config->isEnabled() || !$this->config->isCronEnabled()) {
             return;
         }
 
@@ -75,7 +74,7 @@ class SchedulePost
 
             $collection->getSelect()->limit($limit);
 
-            if($collection->count() > 0) {
+            if ($collection->count() > 0) {
                 $this->instagramWorker
                     ->postInstagramByProductCollection($collection);
             }

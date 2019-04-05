@@ -26,8 +26,7 @@ class Activation extends Select
         Context $context,
         Enabledisable $enableDisable,
         array $data = []
-    )
-    {
+    ) {
         parent::__construct($context, $data);
 
         $this->_enableDisable = $enableDisable;

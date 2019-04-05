@@ -2,9 +2,10 @@
 
 namespace GhoSter\AutoInstagramPost\Model;
 
+use Magento\Framework\Model\AbstractModel;
 use GhoSter\AutoInstagramPost\Api\Data\ItemInterface;
 
-class Item extends \Magento\Framework\Model\AbstractModel implements ItemInterface
+class Item extends AbstractModel implements ItemInterface
 {
 
     const TYPE_SUCCESS = 'success';
@@ -22,7 +23,7 @@ class Item extends \Magento\Framework\Model\AbstractModel implements ItemInterfa
      */
     protected function _construct()
     {
-        $this->_init('GhoSter\AutoInstagramPost\Model\ResourceModel\Item');
+        $this->_init(\GhoSter\AutoInstagramPost\Model\ResourceModel\Item::class);
     }
 
     /**

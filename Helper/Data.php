@@ -67,8 +67,7 @@ class Data extends AbstractHelper
         CategoryCollectionFactory $categoryCollectionFactory,
         InstagramConfig $config,
         LoggerInterface $logger
-    )
-    {
+    ) {
         $this->directoryList = $directoryList;
         $this->filesystem = $filesystem;
         $this->imageFactory = $imageFactory;
@@ -97,8 +96,7 @@ class Data extends AbstractHelper
         $width,
         $height = null,
         $quality = 100
-    )
-    {
+    ) {
 
         if ($height) {
             $imageResizedDir = $this->directoryList->getPath('media')
@@ -168,7 +166,7 @@ class Data extends AbstractHelper
         $imageDir,
         $width,
         $height
-    ){
+    ) {
         try {
             /** @var $image \Magento\Framework\Image */
             $image = $this->imageFactory->create();
@@ -201,8 +199,7 @@ class Data extends AbstractHelper
         $sourceImage,
         $imageExt,
         $quality = 100
-    )
-    {
+    ) {
 
         if (!file_exists($convertedImage)) {
             switch ($imageExt) {
@@ -220,7 +217,7 @@ class Data extends AbstractHelper
                     $jpgImage = imagecreatefrombmp($sourceImage);
                     break;
             }
-            if(isset($jpgImage)) {
+            if (isset($jpgImage)) {
                 $trueColorImage = imagecreatetruecolor(imagesx($jpgImage), imagesy($jpgImage));
                 imagefill($trueColorImage, 0, 0, imagecolorallocate($trueColorImage, 255, 255, 255));
                 imagealphablending($trueColorImage, true);
@@ -257,7 +254,9 @@ class Data extends AbstractHelper
                 $i = 1;
                 foreach ($collection as $category) {
                     $hashTagsStrippedData[] = strtolower(preg_replace('/\s+/', '', $category->getName()));
-                    if ($i++ == self::DEFAULT_CATEGORY_HASHTAG_LIMIT) break;
+                    if ($i++ == self::DEFAULT_CATEGORY_HASHTAG_LIMIT) {
+                        break;
+                    }
                 }
 
             } catch (\Exception $e) {

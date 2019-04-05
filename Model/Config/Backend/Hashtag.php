@@ -2,7 +2,9 @@
 
 namespace GhoSter\AutoInstagramPost\Model\Config\Backend;
 
-class Hashtag extends \Magento\Config\Model\Config\Backend\Serialized\ArraySerialized
+use Magento\Config\Model\Config\Backend\Serialized\ArraySerialized;
+
+class Hashtag extends ArraySerialized
 {
     public function beforeSave()
     {

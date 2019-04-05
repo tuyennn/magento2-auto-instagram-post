@@ -1,10 +1,12 @@
 <?php
+
 namespace GhoSter\AutoInstagramPost\Api;
 
 use Magento\Catalog\Model\Product;
 use Magento\Catalog\Model\ResourceModel\Product\Collection as ProductCollection;
 
-interface WorkerInterface {
+interface WorkerInterface
+{
 
     /**
      * Post to Instagram by Product

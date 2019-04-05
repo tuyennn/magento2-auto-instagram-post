@@ -55,8 +55,7 @@ class MassPost extends Action
         InstagramWorker $instagramWorker,
         Filter $filter,
         CollectionFactory $collectionFactory
-)
-    {
+    ) {
         $this->productFactory = $productFactory;
         $this->instagramWorker = $instagramWorker;
         $this->filter = $filter;
@@ -110,7 +109,7 @@ class MassPost extends Action
                 $this->messageManager->addErrorMessage($e->getMessage());
             } catch (\Exception $e) {
                 $this->messageManager->addExceptionMessage(
-                    $e, 
+                    $e,
                     __('Something went wrong while posting to Instagram.')
                 );
             }

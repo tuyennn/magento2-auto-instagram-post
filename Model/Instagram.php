@@ -39,7 +39,6 @@ class Instagram
     protected $logger;
 
 
-
     /**
      * Default class constructor.
      *
@@ -53,8 +52,7 @@ class Instagram
         InstagramConfig $config,
         LoggerInterface $logger,
         array $data = []
-    )
-    {
+    ) {
         $this->logger = $logger;
         $this->config = $config;
 
@@ -111,7 +109,8 @@ class Instagram
     public function login($force = false)
     {
         if (!$this->isLoggedIn || $force) {
-            $fetch = $this->request('si/fetch_headers/?challenge_type=signup&guid=' . $this->generateUUID(false), null, true);
+            $fetch = $this->request('si/fetch_headers/?challenge_type=signup&guid=' . $this->generateUUID(false), null,
+                true);
             preg_match('#Set-Cookie: csrftoken=([^;]+)#', $fetch[0], $token);
 
             $data = [
@@ -1680,7 +1679,8 @@ class Instagram
             $body .= 'Content-Disposition: ' . $b['type'] . '; name="' . $b['name'] . '"';
             if (isset($b['filename'])) {
                 $ext = pathinfo($b['filename'], PATHINFO_EXTENSION);
-                $body .= '; filename="' . 'pending_media_' . number_format(round(microtime(true) * 1000), 0, '', '') . '.' . $ext . '"';
+                $body .= '; filename="' . 'pending_media_' . number_format(round(microtime(true) * 1000), 0, '',
+                        '') . '.' . $ext . '"';
             }
             if (isset($b['headers']) && is_array($b['headers'])) {
                 foreach ($b['headers'] as $header) {

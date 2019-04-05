@@ -48,8 +48,7 @@ class TestConnection extends Action
         Instagram $instagram,
         InstagramConfig $config,
         LoggerInterface $logger
-    )
-    {
+    ) {
         $this->resultJsonFactory = $resultJsonFactory;
         $this->_instagram = $instagram;
         $this->config = $config;

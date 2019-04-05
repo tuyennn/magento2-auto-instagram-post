@@ -80,8 +80,7 @@ class Config
         Escaper $escaper,
         DirectoryList $directoryList,
         Serializer $serializer
-    )
-    {
+    ) {
         $this->scopeConfig = $scopeConfig;
         $this->storeManager = $storeManager;
         $this->encryptor = $encryptor;
@@ -329,7 +328,8 @@ class Config
         ));
     }
 
-    public function getCronLimit(){
+    public function getCronLimit()
+    {
         return $this->escaper->escapeHtml($this->scopeConfig->getValue(
             self::XML_PATH_CRON_LIMIT,
             ScopeInterface::SCOPE_STORE

@@ -32,8 +32,7 @@ class InstallSchema implements InstallSchemaInterface
     public function __construct(
         ManagerInterface $eventManager,
         LoggerInterface $logger
-    )
-    {
+    ) {
         $this->eventManager = $eventManager;
         $this->logger = $logger;
     }

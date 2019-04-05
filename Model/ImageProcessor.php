@@ -10,11 +10,11 @@ use GhoSter\AutoInstagramPost\Model\Config as InstagramConfig;
 class ImageProcessor
 {
 
-    /** 
+    /**
      * @var InstagramConfig
      */
     protected $config;
-    
+
     /**
      * @var InstagramHelper
      */
@@ -39,8 +39,7 @@ class ImageProcessor
         InstagramHelper $instagramHelper,
         DirectoryList $directoryList
 
-    )
-    {
+    ) {
         $this->config = $config;
         $this->instagramHelper = $instagramHelper;
         $this->directoryList = $directoryList;
@@ -81,7 +80,7 @@ class ImageProcessor
     {
         $baseImage = $this->getBaseImage($product);
 
-        if($this->productHasImage) {
+        if ($this->productHasImage) {
             $baseDir = $this->directoryList->getPath('media') .
                 DIRECTORY_SEPARATOR . 'catalog' .
                 DIRECTORY_SEPARATOR . 'product';
