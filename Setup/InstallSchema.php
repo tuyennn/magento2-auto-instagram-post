@@ -6,6 +6,8 @@ use Magento\Framework\DB\Ddl\Table;
 use Magento\Framework\Setup\InstallSchemaInterface;
 use Magento\Framework\Setup\ModuleContextInterface;
 use Magento\Framework\Setup\SchemaSetupInterface;
+use Magento\Framework\Event\ManagerInterface;
+use Psr\Log\LoggerInterface;
 
 /**
  * @codeCoverageIgnore
@@ -13,26 +15,24 @@ use Magento\Framework\Setup\SchemaSetupInterface;
 class InstallSchema implements InstallSchemaInterface
 {
     /**
-     * @var \Magento\Framework\Event\ManagerInterface
+     * @var ManagerInterface
      */
     protected $eventManager;
 
 
     /**
-     * @var \Psr\Log\LoggerInterface
+     * @var LoggerInterface
      */
     private $logger;
 
     /**
-     *
-     * @param \Psr\Log\LoggerInterface $logger
-     * @param \Magento\Framework\Event\ManagerInterface $eventManager
+     * @param ManagerInterface $eventManager
+     * @param LoggerInterface $logger
      */
     public function __construct(
-        \Magento\Framework\Event\ManagerInterface $eventManager,
-        \Psr\Log\LoggerInterface $logger
-    )
-    {
+        ManagerInterface $eventManager,
+        LoggerInterface $logger
+    ) {
         $this->eventManager = $eventManager;
         $this->logger = $logger;
     }
@@ -57,7 +57,7 @@ class InstallSchema implements InstallSchemaInterface
                 $installer->getTable('ghoster_instagram_auto_post')
             )->addColumn(
                 'id',
-                \Magento\Framework\DB\Ddl\Table::TYPE_INTEGER,
+                Table::TYPE_INTEGER,
                 null,
                 [
                     'identity' => true,
@@ -112,7 +112,7 @@ class InstallSchema implements InstallSchemaInterface
                 'product_id',
                 $installer->getTable('catalog_product_entity'),
                 'entity_id',
-                \Magento\Framework\DB\Ddl\Table::ACTION_CASCADE
+                Table::ACTION_CASCADE
             );
 
             $installer->getConnection()->createTable($tableGroup);

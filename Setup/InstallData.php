@@ -65,8 +65,7 @@ class InstallData implements InstallDataInterface
         GroupFactory $attributeGroupFactory,
         TypeFactory $typeFactory,
         AttributeManagement $attributeManagement
-    )
-    {
+    ) {
         $this->eavSetupFactory = $eavSetupFactory;
         $this->attributeFactory = $attributeFactory;
         $this->attributeSetFactory = $attributeSetFactory;

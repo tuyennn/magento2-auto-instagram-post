@@ -20,15 +20,14 @@ class TestConnection extends Field
     public function __construct(
         Context $context,
         array $data = []
-    )
-    {
+    ) {
         parent::__construct($context, $data);
     }
 
     /**
      * Remove scope label
      *
-     * @param  AbstractElement $element
+     * @param AbstractElement $element
      * @return string
      */
     public function render(AbstractElement $element)
@@ -40,7 +39,7 @@ class TestConnection extends Field
     /**
      * Return element html
      *
-     * @param  AbstractElement $element
+     * @param AbstractElement $element
      * @return string
      */
     protected function _getElementHtml(AbstractElement $element)
@@ -55,7 +54,8 @@ class TestConnection extends Field
      */
     public function getAjaxUrl()
     {
-        return $this->getUrl('auto_instagram/system_config/testConnection', ['store' => $this->_request->getParam('store')]);
+        return $this->getUrl('auto_instagram/system_config/testConnection',
+            ['store' => $this->_request->getParam('store')]);
     }
 
     /**

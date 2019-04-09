@@ -39,8 +39,7 @@ class ProductActions extends \Magento\Catalog\Ui\Component\Listing\Columns\Produ
         InstagramConfig $config,
         array $components = [],
         array $data = []
-    )
-    {
+    ) {
         $this->config = $config;
         parent::__construct(
             $context,

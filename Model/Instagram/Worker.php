@@ -63,8 +63,7 @@ class Worker implements WorkerInterface
         Instagram $instagram,
         InstagramLogger $logger,
         ImageProcessor $imageProcessor
-    )
-    {
+    ) {
         $this->config = $config;
         $this->instagramHelper = $instagramHelper;
         $this->instagram = $instagram;
@@ -128,7 +127,7 @@ class Worker implements WorkerInterface
         foreach ($collection as $product) {
             $result = $this->postInstagramByProduct($product);
 
-            if(!empty($result)) {
+            if (!empty($result)) {
                 $results[] = $result;
             }
         }

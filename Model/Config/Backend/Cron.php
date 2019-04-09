@@ -55,8 +55,7 @@ class Cron extends ConfigValue
         \Magento\Framework\Data\Collection\AbstractDb $resourceCollection = null,
         $runModelPath = '',
         array $data = []
-    )
-    {
+    ) {
         $this->_runModelPath = $runModelPath;
         $this->_configValueFactory = $configValueFactory;
         parent::__construct(

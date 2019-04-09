@@ -40,8 +40,7 @@ class ProductSaveAfter implements ObserverInterface
         InstagramHelper $instagramHelper,
         InstagramConfig $config,
         InstagramWorker $instagramWorker
-    )
-    {
+    ) {
         $this->instagramHelper = $instagramHelper;
         $this->config = $config;
         $this->instagramWorker = $instagramWorker;
@@ -58,8 +57,7 @@ class ProductSaveAfter implements ObserverInterface
      */
     public function execute(
         Observer $observer
-    )
-    {
+    ) {
         if (!$this->config->isEnabled()) {
             return;
         }

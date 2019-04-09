@@ -4,7 +4,6 @@ namespace GhoSter\AutoInstagramPost\Cron;
 
 use Magento\Catalog\Model\ResourceModel\Product\Collection as ProductCollection;
 use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory as ProductCollectionFactory;
-use GhoSter\AutoInstagramPost\Model\Instagram;
 use GhoSter\AutoInstagramPost\Model\Instagram\Worker as InstagramWorker;
 use GhoSter\AutoInstagramPost\Model\Config as InstagramConfig;
 
@@ -37,8 +36,7 @@ class SchedulePost
         InstagramConfig $config,
         InstagramWorker $instagramWorker,
         ProductCollectionFactory $productCollectionFactory
-    )
-    {
+    ) {
         $this->config = $config;
         $this->instagramWorker = $instagramWorker;
         $this->productCollection = $productCollectionFactory->create();
@@ -49,6 +47,10 @@ class SchedulePost
      */
     public function execute()
     {
+        if (!$this->config->isEnabled() || !$this->config->isCronEnabled()) {
+            return;
+        }
+
         $limit = $this->config->getCronLimit();
 
         if (!$limit) {
@@ -72,7 +74,7 @@ class SchedulePost
 
             $collection->getSelect()->limit($limit);
 
-            if($collection->count() > 0) {
+            if ($collection->count() > 0) {
                 $this->instagramWorker
                     ->postInstagramByProductCollection($collection);
             }

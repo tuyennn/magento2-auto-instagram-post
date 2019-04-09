@@ -18,7 +18,9 @@ class PostStatusOptions extends Column
     {
         if (isset($dataSource['data']['items'])) {
             foreach ($dataSource['data']['items'] as &$item) {
-                $item['is_posted_to_instagram'] = isset($item[$this->getData('name')]) && $item[$this->getData('name')] ? true : false;
+                $item['is_posted_to_instagram'] =
+                    isset($item[$this->getData('name')]) && $item[$this->getData('name')]
+                        ? true : false;
                 $class = 'grid-severity-minor';
                 $text = __('Unposted');
 

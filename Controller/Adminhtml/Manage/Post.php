@@ -32,8 +32,7 @@ class Post extends Action
         Action\Context $context,
         ProductFactory $productFactory,
         InstagramWorker $instagramWorker
-    )
-    {
+    ) {
         $this->productFactory = $productFactory;
         $this->instagramWorker = $instagramWorker;
         parent::__construct($context);

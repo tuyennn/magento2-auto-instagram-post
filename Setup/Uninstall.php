@@ -1,4 +1,5 @@
 <?php
+
 namespace GhoSter\AutoInstagramPost\Setup;
 
 use Magento\Framework\Setup\UninstallInterface;

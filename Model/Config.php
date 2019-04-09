@@ -80,8 +80,7 @@ class Config
         Escaper $escaper,
         DirectoryList $directoryList,
         Serializer $serializer
-    )
-    {
+    ) {
         $this->scopeConfig = $scopeConfig;
         $this->storeManager = $storeManager;
         $this->encryptor = $encryptor;
@@ -163,7 +162,7 @@ class Config
      *
      * @param null $store
      * @return string
-     * @throws \Magento\Framework\Exception\FileSystemException
+     * @throws \Exception
      */
     public function getDefaultImage($store = null)
     {
@@ -329,7 +328,8 @@ class Config
         ));
     }
 
-    public function getCronLimit(){
+    public function getCronLimit()
+    {
         return $this->escaper->escapeHtml($this->scopeConfig->getValue(
             self::XML_PATH_CRON_LIMIT,
             ScopeInterface::SCOPE_STORE

@@ -1,4 +1,5 @@
 <?php
+
 namespace GhoSter\AutoInstagramPost\Block\Adminhtml;
 
 use Magento\Eav\Setup\EavSetup;

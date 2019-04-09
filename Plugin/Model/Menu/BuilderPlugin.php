@@ -31,8 +31,7 @@ class BuilderPlugin
     public function __construct(
         ItemFactory $menuItemFactory,
         InstagramConfig $config
-    )
-    {
+    ) {
         $this->config = $config;
         $this->menuItemFactory = $menuItemFactory;
     }
@@ -47,9 +46,8 @@ class BuilderPlugin
     public function afterGetResult(
         Builder $subject,
         Menu $menu
-    )
-    {
-        if(!$this->config->isEnabled() && $menu->get(self::MENU_MANAGE_ID)) {
+    ) {
+        if (!$this->config->isEnabled() && $menu->get(self::MENU_MANAGE_ID)) {
             $menu->remove(self::MENU_MANAGE_ID);
         }
 
