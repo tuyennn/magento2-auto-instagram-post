@@ -5,16 +5,15 @@ namespace GhoSter\AutoInstagramPost\Model;
 use Magento\Framework\Model\AbstractModel;
 use GhoSter\AutoInstagramPost\Api\Data\ItemInterface;
 
+/**
+ * Class Item
+ * @package GhoSter\AutoInstagramPost\Model
+ */
 class Item extends AbstractModel implements ItemInterface
 {
 
     const TYPE_SUCCESS = 'success';
     const TYPE_ERROR = 'error';
-
-    /**
-     * @var \Magento\Framework\Stdlib\DateTime
-     */
-    protected $_dateTime;
 
     /**
      * Initialization
@@ -23,7 +22,7 @@ class Item extends AbstractModel implements ItemInterface
      */
     protected function _construct()
     {
-        $this->_init(\GhoSter\AutoInstagramPost\Model\ResourceModel\Item::class);
+        $this->_init(ResourceModel\Item::class);
     }
 
     /**

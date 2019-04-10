@@ -6,6 +6,10 @@ use Magento\Framework\View\Element\Context;
 use Magento\Framework\View\Element\Html\Select;
 use Magento\Config\Model\Config\Source\Enabledisable;
 
+/**
+ * Class Activation
+ * @package GhoSter\AutoInstagramPost\Block\Adminhtml\System\Config\Hashtag
+ */
 class Activation extends Select
 {
     /**

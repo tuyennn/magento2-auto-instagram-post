@@ -2,7 +2,6 @@
 
 namespace GhoSter\AutoInstagramPost\Api\Data;
 
-
 interface ItemInterface
 {
 
