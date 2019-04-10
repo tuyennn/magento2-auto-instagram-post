@@ -8,6 +8,10 @@ use Magento\Cron\Model\Config\Source\Frequency as SourceCronFrequency;
 use Magento\Framework\Exception\LocalizedException;
 use GhoSter\AutoInstagramPost\Model\Config as InstagramConfig;
 
+/**
+ * Class Cron
+ * @package GhoSter\AutoInstagramPost\Model\Config\Backend
+ */
 class Cron extends ConfigValue
 {
     const CRON_STRING_PATH = 'crontab/default/jobs/auto_instagram_post/schedule/cron_expr';

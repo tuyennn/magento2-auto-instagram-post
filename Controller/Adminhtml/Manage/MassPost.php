@@ -11,7 +11,10 @@ use Magento\Ui\Component\MassAction\Filter;
 use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory;
 use GhoSter\AutoInstagramPost\Model\Config as InstagramConfig;
 
-
+/**
+ * Class MassPost
+ * @package GhoSter\AutoInstagramPost\Controller\Adminhtml\Manage
+ */
 class MassPost extends Action
 {
     /** @var InstagramConfig */

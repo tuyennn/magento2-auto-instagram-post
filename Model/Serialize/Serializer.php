@@ -2,15 +2,19 @@
 
 namespace GhoSter\AutoInstagramPost\Model\Serialize;
 
+/**
+ * Class Serializer
+ * @package GhoSter\AutoInstagramPost\Model\Serialize
+ */
 class Serializer
 {
     /**
-     * {@inheritDoc}
+     * Simple Serializer for deprecated functions
      * @since 100.2.0
      */
     public function unserialize($string)
     {
-        if ($this->is_serialized($string)) {
+        if ($this->_isSerialized($string)) {
             $string = $this->serialize($string);
         }
         $result = json_decode($string, true);
@@ -21,8 +25,12 @@ class Serializer
         return $result;
     }
 
-
-    function is_serialized($value, &$result = null)
+    /**
+     * @param $value
+     * @param null $result
+     * @return bool
+     */
+    private function _isSerialized($value, &$result = null)
     {
         // Bit of a give away this one
         if (!is_string($value)) {

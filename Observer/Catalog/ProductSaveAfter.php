@@ -6,13 +6,17 @@ use Magento\Framework\Event\Observer;
 use Magento\Framework\Event\ObserverInterface;
 use Magento\Framework\Message\ManagerInterface as MessageManager;
 use Magento\Framework\App\Action\Context as ActionContext;
+use Magento\Framework\Exception\FileSystemException;
 use Magento\Catalog\Model\Product;
 use GhoSter\AutoInstagramPost\Model\Instagram;
 use GhoSter\AutoInstagramPost\Model\Instagram\Worker as InstagramWorker;
 use GhoSter\AutoInstagramPost\Model\Config as InstagramConfig;
 use GhoSter\AutoInstagramPost\Helper\Data as InstagramHelper;
 
-
+/**
+ * Class ProductSaveAfter
+ * @package GhoSter\AutoInstagramPost\Observer\Catalog
+ */
 class ProductSaveAfter implements ObserverInterface
 {
 
@@ -45,7 +49,6 @@ class ProductSaveAfter implements ObserverInterface
         $this->config = $config;
         $this->instagramWorker = $instagramWorker;
         $this->messageManager = $context->getMessageManager();
-
     }
 
 
@@ -53,7 +56,7 @@ class ProductSaveAfter implements ObserverInterface
      * Execute observer
      *
      * @param Observer $observer
-     * @throws \Magento\Framework\Exception\FileSystemException
+     * @throws FileSystemException
      */
     public function execute(
         Observer $observer
@@ -100,6 +103,5 @@ class ProductSaveAfter implements ObserverInterface
                     );
             }
         }
-
     }
 }

@@ -4,11 +4,16 @@ namespace GhoSter\AutoInstagramPost\Controller\Adminhtml\System\Config;
 
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
+use Magento\Framework\Controller\Result\Json;
 use Magento\Framework\Controller\Result\JsonFactory;
 use GhoSter\AutoInstagramPost\Model\Instagram;
 use GhoSter\AutoInstagramPost\Model\Config as InstagramConfig;
 use Psr\Log\LoggerInterface;
 
+/**
+ * Class TestConnection
+ * @package GhoSter\AutoInstagramPost\Controller\Adminhtml\System\Config
+ */
 class TestConnection extends Action
 {
 
@@ -60,13 +65,13 @@ class TestConnection extends Action
     /**
      * Collect relations data
      *
-     * @return \Magento\Framework\Controller\Result\Json
+     * @return Json
      */
     public function execute()
     {
         $responseData = [];
 
-        /** @var \Magento\Framework\Controller\Result\Json $result */
+        /** @var Json $result */
         $result = $this->resultJsonFactory->create();
 
         try {
@@ -106,7 +111,7 @@ class TestConnection extends Action
         } catch (\Exception $e) {
             $responseData['success'] = false;
             $responseData['message'] = $e->getMessage();
-            $this->_objectManager->get('Psr\Log\LoggerInterface')->critical($e);
+            $this->logger->critical($e);
         }
 
 

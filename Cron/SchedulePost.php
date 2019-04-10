@@ -6,7 +6,12 @@ use Magento\Catalog\Model\ResourceModel\Product\Collection as ProductCollection;
 use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory as ProductCollectionFactory;
 use GhoSter\AutoInstagramPost\Model\Instagram\Worker as InstagramWorker;
 use GhoSter\AutoInstagramPost\Model\Config as InstagramConfig;
+use Psr\Log\LoggerInterface;
 
+/**
+ * Class SchedulePost
+ * @package GhoSter\AutoInstagramPost\Cron
+ */
 class SchedulePost
 {
 
@@ -25,21 +30,29 @@ class SchedulePost
      */
     protected $productCollection;
 
+    /**
+     * @var LoggerInterface
+     */
+    private $logger;
+
 
     /**
      * SchedulePost constructor.
      * @param InstagramConfig $config
      * @param InstagramWorker $instagramWorker
      * @param ProductCollectionFactory $productCollectionFactory
+     * @param LoggerInterface $logger
      */
     public function __construct(
         InstagramConfig $config,
         InstagramWorker $instagramWorker,
-        ProductCollectionFactory $productCollectionFactory
+        ProductCollectionFactory $productCollectionFactory,
+        LoggerInterface $logger
     ) {
         $this->config = $config;
         $this->instagramWorker = $instagramWorker;
         $this->productCollection = $productCollectionFactory->create();
+        $this->logger = $logger;
     }
 
     /**
@@ -80,9 +93,7 @@ class SchedulePost
             }
 
         } catch (\Exception $e) {
-
+            $this->logger->critical($e);
         }
-
-        return;
     }
 }

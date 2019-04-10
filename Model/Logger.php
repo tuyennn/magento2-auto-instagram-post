@@ -2,9 +2,14 @@
 
 namespace GhoSter\AutoInstagramPost\Model;
 
+use Magento\Catalog\Model\Product;
 use GhoSter\AutoInstagramPost\Model\Item as InstagramItem;
 use GhoSter\AutoInstagramPost\Model\ItemFactory;
 
+/**
+ * Class Logger
+ * @package GhoSter\AutoInstagramPost\Model
+ */
 class Logger
 {
     /**
@@ -33,7 +38,7 @@ class Logger
     /**
      * Record log after uploading
      *
-     * @param $product \Magento\Catalog\Model\Product
+     * @param $product Product
      * @param $result
      * @param $type
      * @throws \Exception

@@ -4,18 +4,16 @@ namespace GhoSter\AutoInstagramPost\Plugin\Model\Menu;
 
 use Magento\Backend\Model\Menu\Builder;
 use Magento\Backend\Model\Menu;
-use Magento\Backend\Model\Menu\ItemFactory;
 use GhoSter\AutoInstagramPost\Model\Config as InstagramConfig;
 
+/**
+ * Class BuilderPlugin
+ * @package GhoSter\AutoInstagramPost\Plugin\Model\Menu
+ */
 class BuilderPlugin
 {
 
     const MENU_MANAGE_ID = 'GhoSter_AutoInstagramPost::manage_product';
-
-    /**
-     * @var ItemFactory
-     */
-    private $menuItemFactory;
 
     /**
      * @var InstagramConfig
@@ -25,15 +23,12 @@ class BuilderPlugin
     /**
      * BuilderPlugin constructor.
      *
-     * @param ItemFactory $menuItemFactory
      * @param InstagramConfig $config
      */
     public function __construct(
-        ItemFactory $menuItemFactory,
         InstagramConfig $config
     ) {
         $this->config = $config;
-        $this->menuItemFactory = $menuItemFactory;
     }
 
     /**

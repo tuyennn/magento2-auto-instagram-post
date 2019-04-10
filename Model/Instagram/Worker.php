@@ -12,6 +12,10 @@ use GhoSter\AutoInstagramPost\Model\ImageProcessor;
 use GhoSter\AutoInstagramPost\Model\Config as InstagramConfig;
 use GhoSter\AutoInstagramPost\Helper\Data as InstagramHelper;
 
+/**
+ * Class Worker
+ * @package GhoSter\AutoInstagramPost\Model\Instagram
+ */
 class Worker implements WorkerInterface
 {
     /**
