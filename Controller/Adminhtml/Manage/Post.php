@@ -6,9 +6,14 @@ use Magento\Backend\App\Action;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Catalog\Model\ProductFactory;
 use Magento\Catalog\Model\Product;
+use Magento\Backend\Model\View\Result\Redirect;
 use GhoSter\AutoInstagramPost\Model\Instagram;
 use GhoSter\AutoInstagramPost\Model\Instagram\Worker as InstagramWorker;
 
+/**
+ * Class Post
+ * @package GhoSter\AutoInstagramPost\Controller\Adminhtml\Manage
+ */
 class Post extends Action
 {
     /**
@@ -40,7 +45,7 @@ class Post extends Action
 
     public function execute()
     {
-        /** @var \Magento\Backend\Model\View\Result\Redirect $resultRedirect */
+        /** @var Redirect $resultRedirect */
         $resultRedirect = $this->resultRedirectFactory->create();
         $id = $this->getRequest()->getParam('id');
 

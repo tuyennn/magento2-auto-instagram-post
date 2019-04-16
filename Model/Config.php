@@ -5,12 +5,18 @@ namespace GhoSter\AutoInstagramPost\Model;
 use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Store\Model\StoreManagerInterface;
 use Magento\Store\Model\ScopeInterface;
+use Magento\Store\Model\Store;
 use Magento\Framework\Encryption\EncryptorInterface;
 use Magento\Framework\Escaper;
 use Magento\Framework\App\Filesystem\DirectoryList;
+use Magento\Framework\Exception\FileSystemException;
 use GhoSter\AutoInstagramPost\Model\Config\Backend\Image as InstagramDefaultImage;
 use GhoSter\AutoInstagramPost\Model\Serialize\Serializer;
 
+/**
+ * Class Config
+ * @package GhoSter\AutoInstagramPost\Model
+ */
 class Config
 {
     const XML_PATH_ENABLED_MODULE = 'auto_instagram_post/general/enabled';
@@ -95,7 +101,6 @@ class Config
      * @param null|string|bool|int|Store $store
      * @return bool
      */
-
     public function isEnabled($store = null)
     {
         if (empty($this->getUsernameInfo($store))
@@ -121,7 +126,8 @@ class Config
         return $this->scopeConfig->getValue(
             self::XML_PATH_INSTAGRAM_USER,
             ScopeInterface::SCOPE_STORE,
-            $store);
+            $store
+        );
     }
 
     /**
@@ -135,7 +141,8 @@ class Config
         return $this->scopeConfig->getValue(
             self::XML_PATH_INSTAGRAM_PASSWORD,
             ScopeInterface::SCOPE_STORE,
-            $store);
+            $store
+        );
     }
 
     /**
@@ -162,7 +169,7 @@ class Config
      *
      * @param null $store
      * @return string
-     * @throws \Exception
+     * @throws FileSystemException
      */
     public function getDefaultImage($store = null)
     {

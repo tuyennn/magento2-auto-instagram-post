@@ -2,22 +2,32 @@
 
 namespace GhoSter\AutoInstagramPost\Controller\Adminhtml\Manage;
 
-class Index extends \Magento\Catalog\Controller\Adminhtml\Product
+use Magento\Catalog\Controller\Adminhtml\Product as ProductController;
+use Magento\Framework\View\Result\PageFactory;
+use Magento\Backend\App\Action\Context;
+use Magento\Catalog\Controller\Adminhtml\Product\Builder as ProductBuilder;
+use Magento\Backend\Model\View\Result\Page;
+
+/**
+ * Class Index
+ * @package GhoSter\AutoInstagramPost\Controller\Adminhtml\Manage
+ */
+class Index extends ProductController
 {
     /**
-     * @var \Magento\Framework\View\Result\PageFactory
+     * @var PageFactory
      */
     protected $resultPageFactory;
 
     /**
-     * @param \Magento\Backend\App\Action\Context $context
-     * @param \Magento\Catalog\Controller\Adminhtml\Product\Builder $productBuilder
-     * @param \Magento\Framework\View\Result\PageFactory $resultPageFactory
+     * @param Context $context
+     * @param ProductBuilder $productBuilder
+     * @param PageFactory $resultPageFactory
      */
     public function __construct(
-        \Magento\Backend\App\Action\Context $context,
-        \Magento\Catalog\Controller\Adminhtml\Product\Builder $productBuilder,
-        \Magento\Framework\View\Result\PageFactory $resultPageFactory
+        Context $context,
+        ProductBuilder $productBuilder,
+        PageFactory $resultPageFactory
     ) {
         parent::__construct($context, $productBuilder);
         $this->resultPageFactory = $resultPageFactory;
@@ -26,11 +36,11 @@ class Index extends \Magento\Catalog\Controller\Adminhtml\Product
     /**
      * Event list page
      *
-     * @return \Magento\Backend\Model\View\Result\Page
+     * @return Page
      */
     public function execute()
     {
-        /** @var \Magento\Backend\Model\View\Result\Page $resultPage */
+        /** @var Page $resultPage */
         $resultPage = $this->resultPageFactory->create();
         $resultPage->setActiveMenu('GhoSter_AutoInstagramPost::manage_product');
         $resultPage->getConfig()->getTitle()->prepend(__('Manage Posts By Product'));

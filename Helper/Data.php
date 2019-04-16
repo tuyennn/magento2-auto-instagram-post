@@ -2,16 +2,24 @@
 
 namespace GhoSter\AutoInstagramPost\Helper;
 
+use Magento\Framework\App\Helper\Context;
 use Magento\Framework\App\Helper\AbstractHelper;
+use Magento\Framework\Image\AdapterFactory;
+use Magento\Framework\App\Filesystem\DirectoryList;
+use Magento\Framework\Filesystem;
+use Magento\Framework\Filesystem\Driver\File as DriverFile;
+use Magento\Framework\File\Mime as FileMime;
+use Magento\Framework\Exception\FileSystemException;
 use Magento\Catalog\Model\Product;
 use Magento\Catalog\Model\ProductFactory;
 use Magento\Catalog\Model\ResourceModel\Category\Collection as CategoryCollection;
 use Magento\Catalog\Model\ResourceModel\Category\CollectionFactory as CategoryCollectionFactory;
-use Magento\Framework\App\Filesystem\DirectoryList;
-use Magento\Framework\Filesystem;
 use GhoSter\AutoInstagramPost\Model\Config as InstagramConfig;
-use Psr\Log\LoggerInterface;
 
+/**
+ * Class Data
+ * @package GhoSter\AutoInstagramPost\Helper
+ */
 class Data extends AbstractHelper
 {
 
@@ -29,53 +37,57 @@ class Data extends AbstractHelper
     /** @var Filesystem */
     protected $filesystem;
 
+    /** @var DriverFile */
+    private $driverFile;
+
+    /** @var FileMime */
+    private $fileMime;
+
     /** @var \Magento\Framework\Image\AdapterFactory */
     protected $imageFactory;
 
     /** @var ProductFactory */
     protected $productFactory;
 
-    /**
-     * @var CategoryCollectionFactory
-     */
+    /** @var CategoryCollectionFactory */
     protected $categoryCollectionFactory;
 
     /** @var InstagramConfig */
     protected $config;
 
-    /** @var LoggerInterface */
-    protected $logger;
-
     /**
      * Data constructor.
-     * @param \Magento\Framework\App\Helper\Context $context
+     * @param Context $context
      * @param DirectoryList $directoryList
      * @param Filesystem $filesystem
-     * @param \Magento\Framework\Image\AdapterFactory $imageFactory
+     * @param DriverFile $driverFile
+     * @param FileMime $fileMime
+     * @param AdapterFactory $imageFactory
      * @param ProductFactory $productFactory
      * @param CategoryCollectionFactory $categoryCollectionFactory
      * @param InstagramConfig $config
-     * @param LoggerInterface $logger
-     * @throws \Magento\Framework\Exception\FileSystemException
+     * @throws FileSystemException
      */
     public function __construct(
-        \Magento\Framework\App\Helper\Context $context,
+        Context $context,
         DirectoryList $directoryList,
         Filesystem $filesystem,
-        \Magento\Framework\Image\AdapterFactory $imageFactory,
+        DriverFile $driverFile,
+        FileMime $fileMime,
+        AdapterFactory $imageFactory,
         ProductFactory $productFactory,
         CategoryCollectionFactory $categoryCollectionFactory,
-        InstagramConfig $config,
-        LoggerInterface $logger
+        InstagramConfig $config
     ) {
         $this->directoryList = $directoryList;
         $this->filesystem = $filesystem;
+        $this->driverFile = $driverFile;
+        $this->fileMime = $fileMime;
         $this->imageFactory = $imageFactory;
         $this->productFactory = $productFactory;
         $this->categoryCollectionFactory = $categoryCollectionFactory;
         $this->config = $config;
         $this->mediaWriteDirectory = $filesystem->getDirectoryWrite(DirectoryList::MEDIA);
-        $this->logger = $logger;
         parent::__construct($context);
     }
 
@@ -88,7 +100,7 @@ class Data extends AbstractHelper
      * @param null $height
      * @param int $quality
      * @return bool|string
-     * @throws \Magento\Framework\Exception\FileSystemException
+     * @throws FileSystemException
      */
     public function getResizeImage(
         $imageDir,
@@ -116,7 +128,7 @@ class Data extends AbstractHelper
 
         try {
 
-            if (!file_exists($imageResized)) {
+            if (!$this->driverFile->isExists($imageResized)) {
                 $this->_generateInstagramImage(
                     $imageResized,
                     $imageDir,
@@ -125,20 +137,22 @@ class Data extends AbstractHelper
                 );
             }
 
-            if (file_exists($imageResized)) {
-                $extOriginal = strtolower(pathinfo($image, PATHINFO_EXTENSION));
+            if ($this->driverFile->isExists($imageResized)) {
+                $extOriginal = strtolower($this->fileMime->getMimeType($imageResized));
 
-                if (!in_array($extOriginal, ['jpg', 'jpeg'])) {
+                if (!in_array($extOriginal, ['jpe', 'jpg', 'jpeg'])) {
                     $wrongImageFormat = $imageResized;
 
-                    $imageResized = $imageResizedDir . str_replace($extOriginal, '.jpg', $image);
-
-                    $this->_convertWrongFormatImage(
+                    $result = $this->_convertWrongFormatImage(
                         $imageResized,
                         $wrongImageFormat,
                         $extOriginal,
                         $quality
                     );
+
+                    if ($result) {
+                        $imageResized = $imageResizedDir . str_replace($extOriginal, '.jpg', $image);
+                    }
                 }
 
                 return $imageResized;
@@ -147,10 +161,9 @@ class Data extends AbstractHelper
             return false;
 
         } catch (\Exception $e) {
-            $this->logger->critical($e);
+            $this->_logger->critical($e);
             return false;
         }
-
     }
 
     /**
@@ -168,22 +181,19 @@ class Data extends AbstractHelper
         $height
     ) {
         try {
-            /** @var $image \Magento\Framework\Image */
+            /** @var $image \Magento\Framework\Image\Adapter\AdapterInterface */
             $image = $this->imageFactory->create();
             $image->open($imageDir);
             $image->constrainOnly(true);
             $image->keepAspectRatio(true);
             $image->keepFrame(true);
-            $image->backgroundColor(array(255, 255, 255));
+            $image->backgroundColor([255, 255, 255]);
             $image->resize($width, $height);
             $image->save($imageResizedPath);
 
         } catch (\Exception $e) {
-
+            $this->_logger->error($e->getMessage());
         }
-
-        return;
-
     }
 
     /**
@@ -193,6 +203,7 @@ class Data extends AbstractHelper
      * @param $sourceImage
      * @param $imageExt
      * @param int $quality
+     * @return boolean
      */
     private function _convertWrongFormatImage(
         $convertedImage,
@@ -201,33 +212,46 @@ class Data extends AbstractHelper
         $quality = 100
     ) {
 
-        if (!file_exists($convertedImage)) {
-            switch ($imageExt) {
-                case 'jpg':
-                case 'jpeg':
-                    $jpgImage = imagecreatefromjpeg($sourceImage);
-                    break;
-                case 'png':
-                    $jpgImage = imagecreatefrompng($sourceImage);
-                    break;
-                case 'gif':
-                    $jpgImage = imagecreatefromgif($sourceImage);
-                    break;
-                case 'bmp':
-                    $jpgImage = imagecreatefrombmp($sourceImage);
-                    break;
-            }
-            if (isset($jpgImage)) {
-                $trueColorImage = imagecreatetruecolor(imagesx($jpgImage), imagesy($jpgImage));
-                imagefill($trueColorImage, 0, 0, imagecolorallocate($trueColorImage, 255, 255, 255));
-                imagealphablending($trueColorImage, true);
-                imagecopy($trueColorImage, $jpgImage, 0, 0, 0, 0, imagesx($jpgImage), imagesy($jpgImage));
-                imagedestroy($jpgImage);
-                imagejpeg($trueColorImage, $convertedImage, $quality);
-                imagedestroy($trueColorImage);
+        try {
+
+            if (!$this->driverFile->isExists($convertedImage)) {
+                // @codingStandardsIgnoreStart
+                switch ($imageExt) {
+                    case 'jpg':
+                    case 'jpeg':
+                        $jpgImage = imagecreatefromjpeg($sourceImage);
+                        break;
+                    case 'png':
+                        $jpgImage = imagecreatefrompng($sourceImage);
+                        break;
+                    case 'gif':
+                        $jpgImage = imagecreatefromgif($sourceImage);
+                        break;
+                    case 'bmp':
+                        $jpgImage = imagecreatefrombmp($sourceImage);
+                        break;
+                }
+                if (isset($jpgImage)) {
+                    $trueColorImage = imagecreatetruecolor(imagesx($jpgImage), imagesy($jpgImage));
+                    imagefill($trueColorImage, 0, 0, imagecolorallocate($trueColorImage, 255, 255, 255));
+                    imagealphablending($trueColorImage, true);
+                    imagecopy($trueColorImage, $jpgImage, 0, 0, 0, 0, imagesx($jpgImage), imagesy($jpgImage));
+                    imagedestroy($jpgImage);
+                    imagejpeg($trueColorImage, $convertedImage, $quality);
+                    imagedestroy($trueColorImage);
+                }
+                // @codingStandardsIgnoreEnd
             }
 
+        } catch (FileSystemException $e) {
+            $this->_logger->error($e->getMessage());
+            return false;
+        } catch (\Exception $e) {
+            $this->_logger->error($e->getMessage());
+            return false;
         }
+
+        return true;
     }
 
     /**
@@ -260,9 +284,8 @@ class Data extends AbstractHelper
                 }
 
             } catch (\Exception $e) {
-
+                $this->_logger->error($e->getMessage());
             }
-
         }
 
         if (!empty($hashTagsStrippedData)) {

@@ -2,12 +2,16 @@
 
 namespace GhoSter\AutoInstagramPost\Setup;
 
+use Magento\Catalog\Model\Product;
 use Magento\Framework\Setup\UninstallInterface;
 use Magento\Framework\Setup\SchemaSetupInterface;
 use Magento\Framework\Setup\ModuleContextInterface;
 use Magento\Eav\Setup\EavSetup;
 use Magento\Eav\Setup\EavSetupFactory;
 
+/**
+ * @codeCoverageIgnore
+ */
 class Uninstall implements UninstallInterface
 {
 
@@ -52,8 +56,7 @@ class Uninstall implements UninstallInterface
          * Remove attributes to the eav/attribute
          */
 
-        $eavSetup->removeAttribute(\Magento\Catalog\Model\Product::ENTITY,
-            'posted_to_instagram');
+        $eavSetup->removeAttribute(Product::ENTITY, 'posted_to_instagram');
 
         $setup->endSetup();
     }

@@ -4,9 +4,15 @@ namespace GhoSter\AutoInstagramPost\Model;
 
 use Magento\Catalog\Model\Product;
 use Magento\Framework\App\Filesystem\DirectoryList;
+use Magento\Framework\Exception\FileSystemException;
+use Magento\Framework\Filesystem\Driver\File as DriverFile;
 use GhoSter\AutoInstagramPost\Helper\Data as InstagramHelper;
 use GhoSter\AutoInstagramPost\Model\Config as InstagramConfig;
 
+/**
+ * Class ImageProcessor
+ * @package GhoSter\AutoInstagramPost\Model
+ */
 class ImageProcessor
 {
 
@@ -25,6 +31,9 @@ class ImageProcessor
      */
     protected $directoryList;
 
+    /** @var DriverFile */
+    private $driverFile;
+
     protected $productHasImage = false;
 
     /**
@@ -33,16 +42,19 @@ class ImageProcessor
      * @param Config $config
      * @param InstagramHelper $instagramHelper
      * @param DirectoryList $directoryList
+     * @param DriverFile $driverFile
      */
     public function __construct(
         InstagramConfig $config,
         InstagramHelper $instagramHelper,
-        DirectoryList $directoryList
+        DirectoryList $directoryList,
+        DriverFile $driverFile
 
     ) {
         $this->config = $config;
         $this->instagramHelper = $instagramHelper;
         $this->directoryList = $directoryList;
+        $this->driverFile = $driverFile;
     }
 
     /**
@@ -50,7 +62,7 @@ class ImageProcessor
      *
      * @param $product Product
      * @return string
-     * @throws \Magento\Framework\Exception\FileSystemException
+     * @throws FileSystemException
      */
     public function getBaseImage($product)
     {
@@ -72,9 +84,9 @@ class ImageProcessor
     /**
      * Process Base Image
      *
-     * @param $product \Magento\Catalog\Model\Product
+     * @param $product Product
      * @return mixed|string|null
-     * @throws \Magento\Framework\Exception\FileSystemException
+     * @throws FileSystemException
      */
     public function processBaseImage($product)
     {
@@ -97,7 +109,7 @@ class ImageProcessor
                 $imageDir = str_replace('media', 'media' . DIRECTORY_SEPARATOR . 'tmp', $baseDir) . $baseImage;
             }
 
-            if (file_exists($imageDir)) {
+            if ($this->driverFile->isExists($imageDir)) {
                 list($width, $height, $type, $attr) = getimagesize($imageDir);
                 $imageSize = $width;
                 if ($height > $width) {

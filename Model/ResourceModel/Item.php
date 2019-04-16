@@ -2,26 +2,30 @@
 
 namespace GhoSter\AutoInstagramPost\Model\ResourceModel;
 
+use Magento\Framework\Model\ResourceModel\Db\Context;
 use Magento\Framework\Model\ResourceModel\Db\AbstractDb;
+use Magento\Framework\Stdlib\DateTime\DateTime;
 
+/**
+ * Class Item
+ * @package GhoSter\AutoInstagramPost\Model\ResourceModel
+ */
 class Item extends AbstractDb
 {
 
-    /**
-     * @var \Magento\Framework\Stdlib\DateTime\DateTime
-     */
+    /** @var DateTime */
     protected $_date;
 
     /**
      * Construct
      *
-     * @param \Magento\Framework\Model\ResourceModel\Db\Context $context
-     * @param \Magento\Framework\Stdlib\DateTime\DateTime $date
+     * @param Context $context
+     * @param DateTime $date
      * @param string|null $resourcePrefix
      */
     public function __construct(
-        \Magento\Framework\Model\ResourceModel\Db\Context $context,
-        \Magento\Framework\Stdlib\DateTime\DateTime $date,
+        Context $context,
+        DateTime $date,
         $resourcePrefix = null
     ) {
         parent::__construct($context, $resourcePrefix);
