@@ -13,6 +13,8 @@ use Psr\Log\LoggerInterface;
  *
  * @package GhoSter\AutoInstagramPost\Model
  */
+
+//@codingStandardsIgnoreFile
 class Instagram
 {
     const API_URL = 'https://i.instagram.com/api/v1/';
