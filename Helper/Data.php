@@ -215,6 +215,7 @@ class Data extends AbstractHelper
         try {
 
             if (!$this->driverFile->isExists($convertedImage)) {
+                // @codingStandardsIgnoreStart
                 switch ($imageExt) {
                     case 'jpg':
                     case 'jpeg':
@@ -239,7 +240,7 @@ class Data extends AbstractHelper
                     imagejpeg($trueColorImage, $convertedImage, $quality);
                     imagedestroy($trueColorImage);
                 }
-
+                // @codingStandardsIgnoreEnd
             }
 
         } catch (FileSystemException $e) {
