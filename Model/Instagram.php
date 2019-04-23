@@ -59,11 +59,7 @@ class Instagram
         $this->config = $config;
 
         if ($this->config->isEnabled()) {
-            $account = $this->config->getAccountInformation();
-            $this->deviceId = $this->generateDeviceId(
-                md5($account['username'] . $account['password'])
-            );
-            $this->setUser($account['username'], $account['password']);
+            $this->deviceId = $this->generateDeviceId();
         }
 
         $this->directoryList = $directoryList;
@@ -96,6 +92,23 @@ class Instagram
             $this->rankToken = $this->usernameId . '_' . $this->uuid;
             $this->token = trim(file_get_contents($this->IGDataPath . "$username-token.dat"));
         }
+    }
+
+    public function isLoggedIn(){
+
+        $account = $this->config->getAccountInformation();
+        $username = isset($account['username']) ? ($account['username']) : null;
+
+        if(!empty($username)) {
+            if ((file_exists($this->IGDataPath . "$username-cookies.dat"))
+                && (file_exists($this->IGDataPath . "$username-userId.dat"))
+                && (file_exists($this->IGDataPath . "$username-token.dat"))
+            ) {
+                $this->isLoggedIn = true;
+            }
+        }
+
+        return $this->isLoggedIn;
     }
 
     /**
@@ -1652,25 +1665,43 @@ class Instagram
         return 'ig_sig_key_version=' . self::SIG_KEY_VERSION . '&signed_body=' . $hash . '.' . urlencode($data);
     }
 
-    public function generateDeviceId($seed)
+    public function generateDeviceId()
     {
-        // Neutralize username/password -> device correlation
-        $volatile_seed = filemtime(__DIR__);
-
-        return 'android-' . substr(md5($seed . $volatile_seed), 16);
+        // This has 10 million possible hash subdivisions per clock second.
+        $megaRandomHash = md5(number_format(microtime(true), 7, '', ''));
+        return 'android-'.substr($megaRandomHash, 16);
     }
 
-    public function generateUUID($type)
+    /**
+     * Checks whether supplied UUID is valid or not.
+     *
+     * @param string $uuid UUID to check.
+     *
+     * @return bool
+     */
+    public static function isValidUUID(
+        $uuid)
     {
-        $uuid = sprintf('%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
-            mt_rand(0, 0xffff), mt_rand(0, 0xffff),
+        if (!is_string($uuid)) {
+            return false;
+        }
+        return (bool) preg_match('#^[a-f\d]{8}-(?:[a-f\d]{4}-){3}[a-f\d]{12}$#D', $uuid);
+    }
+
+    public function generateUUID($keepDashes = true)
+    {
+        $uuid = sprintf(
+            '%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
+            mt_rand(0, 0xffff),
+            mt_rand(0, 0xffff),
             mt_rand(0, 0xffff),
             mt_rand(0, 0x0fff) | 0x4000,
             mt_rand(0, 0x3fff) | 0x8000,
-            mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff)
+            mt_rand(0, 0xffff),
+            mt_rand(0, 0xffff),
+            mt_rand(0, 0xffff)
         );
-
-        return $type ? $uuid : str_replace('-', '', $uuid);
+        return $keepDashes ? $uuid : str_replace('-', '', $uuid);
     }
 
     protected function buildBody($bodies, $boundary)

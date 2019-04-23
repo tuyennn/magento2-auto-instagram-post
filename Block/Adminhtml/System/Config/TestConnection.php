@@ -6,23 +6,16 @@ use Magento\Backend\Block\Template\Context;
 use Magento\Config\Block\System\Config\Form\Field;
 use Magento\Framework\Data\Form\Element\AbstractElement;
 
+/**
+ * Class TestConnection
+ * @package GhoSter\AutoInstagramPost\Block\Adminhtml\System\Config
+ */
 class TestConnection extends Field
 {
     /**
      * @var string
      */
     protected $_template = 'GhoSter_AutoInstagramPost::system/config/test_connection.phtml';
-
-    /**
-     * @param Context $context
-     * @param array $data
-     */
-    public function __construct(
-        Context $context,
-        array $data = []
-    ) {
-        parent::__construct($context, $data);
-    }
 
     /**
      * Remove scope label
@@ -54,8 +47,12 @@ class TestConnection extends Field
      */
     public function getAjaxUrl()
     {
-        return $this->getUrl('auto_instagram/system_config/testConnection',
-            ['store' => $this->_request->getParam('store')]);
+        return $this->getUrl(
+            'auto_instagram/system_config/testConnection',
+            [
+                'store' => $this->_request->getParam('store')
+            ]
+        );
     }
 
     /**
@@ -67,7 +64,7 @@ class TestConnection extends Field
     public function getButtonHtml()
     {
         $button = $this->getLayout()->createBlock(
-            'Magento\Backend\Block\Widget\Button'
+            \Magento\Backend\Block\Widget\Button::class
         )->setData(
             [
                 'id' => 'test_connection',
