@@ -59,11 +59,7 @@ class Instagram
         $this->config = $config;
 
         if ($this->config->isEnabled()) {
-            $account = $this->config->getAccountInformation();
-            $this->deviceId = $this->generateDeviceId(
-                md5($account['username'] . $account['password'])
-            );
-            $this->setUser($account['username'], $account['password']);
+            $this->deviceId = $this->generateDeviceId();
         }
 
         $this->directoryList = $directoryList;
@@ -99,6 +95,26 @@ class Instagram
     }
 
     /**
+     * @return bool
+     */
+    public function isLoggedIn(){
+
+        $account = $this->config->getAccountInformation();
+        $username = isset($account['username']) ? ($account['username']) : null;
+
+        if(!empty($username)) {
+            if ((file_exists($this->IGDataPath . "$username-cookies.dat"))
+                && (file_exists($this->IGDataPath . "$username-userId.dat"))
+                && (file_exists($this->IGDataPath . "$username-token.dat"))
+            ) {
+                $this->isLoggedIn = true;
+            }
+        }
+
+        return $this->isLoggedIn;
+    }
+
+    /**
      * Login to Instagram.
      *
      * @param bool $force
@@ -120,7 +136,7 @@ class Instagram
                 '_csrftoken' => $token[0],
                 'username' => $this->username,
                 'guid' => $this->uuid,
-                'deviceId' => $this->deviceId,
+                'device_id' => $this->deviceId,
                 'password' => $this->password,
                 'login_attempt_count' => '0',
             ];
@@ -1010,7 +1026,7 @@ class Instagram
      */
     public function getUserTags($usernameId)
     {
-        $tags = $this->request("usertags/$usernameId/feed/?rankToken=$this->rankToken&ranked_content=true&")[1];
+        $tags = $this->request("usertags/$usernameId/feed/?rank_token=$this->rank_token&ranked_content=true&")[1];
 
         if ($tags['status'] !== 'ok') {
             throw new \Exception($tags['message'] . "\n");
@@ -1043,7 +1059,7 @@ class Instagram
 
     public function tagFeed($tag)
     {
-        $userFeed = $this->request("feed/tag/$tag/?rankToken=$this->rankToken&ranked_content=true&")[1];
+        $userFeed = $this->request("feed/tag/$tag/?rank_token=$this->rank_token&ranked_content=true&")[1];
 
         if ($userFeed['status'] !== 'ok') {
             throw new \Exception($userFeed['message'] . "\n");
@@ -1120,7 +1136,7 @@ class Instagram
     public function fbUserSearch($query)
     {
         $query = rawurlencode($query);
-        $query = $this->request("fbsearch/topsearch/?context=blended&query=$query&rankToken=$this->rankToken")[1];
+        $query = $this->request("fbsearch/topsearch/?context=blended&query=$query&rank_token=$this->rank_token")[1];
 
         if ($query['status'] !== 'ok') {
             throw new \Exception($query['message'] . "\n");
@@ -1142,7 +1158,7 @@ class Instagram
      */
     public function searchUsers($query)
     {
-        $query = $this->request('users/search/?ig_sig_key_version=' . self::SIG_KEY_VERSION . "&is_typeahead=true&query=$query&rankToken=$this->rankToken")[1];
+        $query = $this->request('users/search/?ig_sig_key_version=' . self::SIG_KEY_VERSION . "&is_typeahead=true&query=$query&rank_token=$this->rank_token")[1];
 
         if ($query['status'] !== 'ok') {
             throw new \Exception($query['message'] . "\n");
@@ -1202,7 +1218,7 @@ class Instagram
      */
     public function searchTags($query)
     {
-        $query = $this->request("tags/search/?is_typeahead=true&q=$query&rankToken=$this->rankToken")[1];
+        $query = $this->request("tags/search/?is_typeahead=true&q=$query&rank_token=$this->rank_token")[1];
 
         if ($query['status'] !== 'ok') {
             throw new \Exception($query['message'] . "\n");
@@ -1223,7 +1239,7 @@ class Instagram
     public function getTimeline($maxid = null)
     {
         $timeline = $this->request(
-            "feed/timeline/?rankToken=$this->rankToken&ranked_content=true"
+            "feed/timeline/?rank_token=$this->rank_token&ranked_content=true"
             . (!is_null($maxid) ? "&max_id=" . $maxid : '')
         )[1];
 
@@ -1251,7 +1267,7 @@ class Instagram
     public function getUserFeed($usernameId, $maxid = null, $minTimestamp = null)
     {
         $userFeed = $this->request(
-            "feed/user/$usernameId/?rankToken=$this->rankToken"
+            "feed/user/$usernameId/?rank_token=$this->rank_token"
             . (!is_null($maxid) ? "&max_id=" . $maxid : '')
             . (!is_null($minTimestamp) ? "&min_timestamp=" . $minTimestamp : '')
             . "&ranked_content=true"
@@ -1279,9 +1295,9 @@ class Instagram
     public function getHashtagFeed($hashtagString, $maxid = null)
     {
         if (is_null($maxid)) {
-            $endpoint = "feed/tag/$hashtagString/?rankToken=$this->rankToken&ranked_content=true&";
+            $endpoint = "feed/tag/$hashtagString/?rank_token=$this->rank_token&ranked_content=true&";
         } else {
-            $endpoint = "feed/tag/$hashtagString/?max_id=" . $maxid . "&rankToken=$this->rankToken&ranked_content=true&";
+            $endpoint = "feed/tag/$hashtagString/?max_id=" . $maxid . "&rank_token=$this->rank_token&ranked_content=true&";
         }
 
         $hashtagFeed = $this->request($endpoint)[1];
@@ -1308,7 +1324,7 @@ class Instagram
     public function searchLocation($query)
     {
         $query = rawurlencode($query);
-        $endpoint = "fbsearch/places/?rankToken=$this->rankToken&query=" . $query;
+        $endpoint = "fbsearch/places/?rank_token=$this->rank_token&query=" . $query;
 
         $locationFeed = $this->request($endpoint)[1];
 
@@ -1334,9 +1350,9 @@ class Instagram
     public function getLocationFeed($locationId, $maxid = null)
     {
         if (is_null($maxid)) {
-            $endpoint = "feed/location/$locationId/?rankToken=$this->rankToken&ranked_content=true&";
+            $endpoint = "feed/location/$locationId/?rank_token=$this->rank_token&ranked_content=true&";
         } else {
-            $endpoint = "feed/location/$locationId/?max_id=" . $maxid . "&rankToken=$this->rankToken&ranked_content=true&";
+            $endpoint = "feed/location/$locationId/?max_id=" . $maxid . "&rank_token=$this->rank_token&ranked_content=true&";
         }
 
         $locationFeed = $this->request($endpoint)[1];
@@ -1370,7 +1386,7 @@ class Instagram
      */
     public function getPopularFeed()
     {
-        $popularFeed = $this->request("feed/popular/?people_teaser_supported=1&rankToken=$this->rankToken&ranked_content=true&")[1];
+        $popularFeed = $this->request("feed/popular/?people_teaser_supported=1&rank_token=$this->rank_token&ranked_content=true&")[1];
 
         if ($popularFeed['status'] !== 'ok') {
             throw new \Exception($popularFeed['message'] . "\n");
@@ -1392,7 +1408,7 @@ class Instagram
      */
     public function getUserFollowings($usernameId, $maxid = null)
     {
-        return $this->request("friendships/$usernameId/following/?max_id=$maxid&ig_sig_key_version=" . self::SIG_KEY_VERSION . "&rankToken=$this->rankToken")[1];
+        return $this->request("friendships/$usernameId/following/?max_id=$maxid&ig_sig_key_version=" . self::SIG_KEY_VERSION . "&rank_token=$this->rank_token")[1];
     }
 
     /**
@@ -1406,7 +1422,7 @@ class Instagram
      */
     public function getUserFollowers($usernameId, $maxid = null)
     {
-        return $this->request("friendships/$usernameId/followers/?max_id=$maxid&ig_sig_key_version=" . self::SIG_KEY_VERSION . "&rankToken=$this->rankToken")[1];
+        return $this->request("friendships/$usernameId/followers/?max_id=$maxid&ig_sig_key_version=" . self::SIG_KEY_VERSION . "&rank_token=$this->rank_token")[1];
     }
 
     /**
@@ -1428,7 +1444,7 @@ class Instagram
      */
     public function getSelfUsersFollowing()
     {
-        return $this->request('friendships/following/?ig_sig_key_version=' . self::SIG_KEY_VERSION . "&rankToken=$this->rankToken")[1];
+        return $this->request('friendships/following/?ig_sig_key_version=' . self::SIG_KEY_VERSION . "&rank_token=$this->rank_token")[1];
     }
 
     /**
@@ -1652,25 +1668,43 @@ class Instagram
         return 'ig_sig_key_version=' . self::SIG_KEY_VERSION . '&signed_body=' . $hash . '.' . urlencode($data);
     }
 
-    public function generateDeviceId($seed)
+    public function generateDeviceId()
     {
-        // Neutralize username/password -> device correlation
-        $volatile_seed = filemtime(__DIR__);
-
-        return 'android-' . substr(md5($seed . $volatile_seed), 16);
+        // This has 10 million possible hash subdivisions per clock second.
+        $megaRandomHash = md5(number_format(microtime(true), 7, '', ''));
+        return 'android-'.substr($megaRandomHash, 16);
     }
 
-    public function generateUUID($type)
+    /**
+     * Checks whether supplied UUID is valid or not.
+     *
+     * @param string $uuid UUID to check.
+     *
+     * @return bool
+     */
+    public static function isValidUUID(
+        $uuid)
     {
-        $uuid = sprintf('%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
-            mt_rand(0, 0xffff), mt_rand(0, 0xffff),
+        if (!is_string($uuid)) {
+            return false;
+        }
+        return (bool) preg_match('#^[a-f\d]{8}-(?:[a-f\d]{4}-){3}[a-f\d]{12}$#D', $uuid);
+    }
+
+    public function generateUUID($keepDashes = true)
+    {
+        $uuid = sprintf(
+            '%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
+            mt_rand(0, 0xffff),
+            mt_rand(0, 0xffff),
             mt_rand(0, 0xffff),
             mt_rand(0, 0x0fff) | 0x4000,
             mt_rand(0, 0x3fff) | 0x8000,
-            mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff)
+            mt_rand(0, 0xffff),
+            mt_rand(0, 0xffff),
+            mt_rand(0, 0xffff)
         );
-
-        return $type ? $uuid : str_replace('-', '', $uuid);
+        return $keepDashes ? $uuid : str_replace('-', '', $uuid);
     }
 
     protected function buildBody($bodies, $boundary)

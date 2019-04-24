@@ -195,6 +195,4 @@ class Worker implements WorkerInterface
     {
         return $this->instagram;
     }
-
-
 }

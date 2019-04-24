@@ -86,6 +86,17 @@ class TestConnection extends Action
                         $this->account['password']
                     );
 
+                if ($this->getInstagram()->isLoggedIn()) {
+                    $this->getInstagram()->logout();
+                }
+
+                $status = $this->getInstagram()->login();
+
+                $responseData = [
+                    'success' => $status,
+                    'message' => $status ? __('Connection Success') :__('Unauthorized Instagram Account, check your user/password settings')
+                ];
+
             } else {
                 $responseData = [
                     'success' => false,
@@ -93,19 +104,6 @@ class TestConnection extends Action
                 ];
 
                 return $result->setData($responseData);
-            }
-
-            if (!$this->getInstagram()->login()) {
-                $responseData = [
-                    'success' => false,
-                    'message' => __('Unauthorized Instagram Account, check your user/password settings')
-                ];
-                return $result->setData($responseData);
-            } else {
-                $responseData = [
-                    'success' => true,
-                    'message' => __('Connection Success')
-                ];
             }
 
         } catch (\Exception $e) {
