@@ -312,7 +312,7 @@ class Config
 
     public function isCronEnabled($store = null)
     {
-        return $this->escaper->escapeHtml($this->scopeConfig->getValue(
+        return (bool)($this->scopeConfig->getValue(
             self::XML_PATH_CRON_ENABLED,
             ScopeInterface::SCOPE_STORE,
             $store
@@ -321,25 +321,25 @@ class Config
 
     public function getCronTime()
     {
-        return $this->escaper->escapeHtml($this->scopeConfig->getValue(
+        return $this->scopeConfig->getValue(
             self::XML_PATH_CRON_TIME,
             ScopeInterface::SCOPE_STORE
-        ));
+        );
     }
 
     public function getCronFreq()
     {
-        return $this->escaper->escapeHtml($this->scopeConfig->getValue(
+        return $this->scopeConfig->getValue(
             self::XML_PATH_CRON_FREQUENCY,
             ScopeInterface::SCOPE_STORE
-        ));
+        );
     }
 
     public function getCronLimit()
     {
-        return $this->escaper->escapeHtml($this->scopeConfig->getValue(
+        return $this->scopeConfig->getValue(
             self::XML_PATH_CRON_LIMIT,
             ScopeInterface::SCOPE_STORE
-        ));
+        );
     }
 }
