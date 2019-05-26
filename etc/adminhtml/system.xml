@@ -10,7 +10,7 @@
             <resource>GhoSter_AutoInstagramPost::config</resource>
             <group id="general" translate="label" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="0">
                 <label>General Settings</label>
-                <field id="enable" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="0">
+                <field id="enabled" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="0">
                     <label>Enable Auto Instagram</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
@@ -18,7 +18,7 @@
                     <label>Username(Instagram Account)</label>
                     <frontend_class>required-entry</frontend_class>
                     <depends>
-                        <field id="enable">1</field>
+                        <field id="enabled">1</field>
                     </depends>
                     <validate>required-entry</validate>
                 </field>
@@ -26,7 +26,7 @@
                     <label>Password</label>
                     <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
                     <depends>
-                        <field id="enable">1</field>
+                        <field id="enabled">1</field>
                     </depends>
                     <validate>required-entry</validate>
                 </field>
@@ -35,7 +35,7 @@
                     <label/>
                     <comment><![CDATA[This action will try to use your provided data to login with Instagram API]]></comment>
                     <depends>
-                        <field id="enable">1</field>
+                        <field id="enabled">1</field>
                     </depends>
                 </field>
                 <field id="upload_image_id" translate="label comment" type="image" sortOrder="40" showInDefault="1" showInWebsite="0" showInStore="0">
@@ -44,7 +44,7 @@
                     <base_url type="media" scope_info="1">instagram</base_url>
                     <comment><![CDATA[Default Image will be uploaded when product have no Image available. Recommended 800x800 px]]></comment>
                     <depends>
-                        <field id="enable">1</field>
+                        <field id="enabled">1</field>
                     </depends>
                     <validate>required-entry</validate>
                 </field>
@@ -52,17 +52,17 @@
                     <label>Allow auto posting to Instagram after Saving Product</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <depends>
-                        <field id="enable">1</field>
+                        <field id="enabled">1</field>
                     </depends>
                 </field>
             </group>
             <group id="comment_hashtag" translate="label" sortOrder="20" showInDefault="1" showInWebsite="0" showInStore="0">
                 <label>Images Description Settings</label>
-                <field id="enable" translate="label" type="select" sortOrder="0" showInDefault="1" showInWebsite="0" showInStore="0">
+                <field id="enabled" translate="label" type="select" sortOrder="0" showInDefault="1" showInWebsite="0" showInStore="0">
                     <label>Enable Auto Hashtag and Description</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <depends>
-                        <field id="*/general/enable">1</field>
+                        <field id="*/general/enabled">1</field>
                     </depends>
                 </field>
                 <field id="product_description" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="0">
@@ -70,8 +70,8 @@
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <comment><![CDATA[Description on Instagram Post should be generated from product description]]></comment>
                     <depends>
-                        <field id="*/general/enable">1</field>
-                        <field id="enable">1</field>
+                        <field id="*/general/enabled">1</field>
+                        <field id="enabled">1</field>
                     </depends>
                 </field>
                 <field id="category_hashtag" translate="label" type="select" sortOrder="20" showInDefault="1" showInWebsite="0" showInStore="0">
@@ -79,16 +79,16 @@
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <comment><![CDATA[Hashtag on Instagram Post should be generated from categories which product belongs]]></comment>
                     <depends>
-                        <field id="*/general/enable">1</field>
-                        <field id="enable">1</field>
+                        <field id="*/general/enabled">1</field>
+                        <field id="enabled">1</field>
                     </depends>
                 </field>
                 <field id="enable_custom" translate="label" type="select" sortOrder="20" showInDefault="1" showInWebsite="0" showInStore="0">
                     <label>Add Custom Hashtags</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <depends>
-                        <field id="*/general/enable">1</field>
-                        <field id="enable">1</field>
+                        <field id="*/general/enabled">1</field>
+                        <field id="enabled">1</field>
                     </depends>
                 </field>
                 <field id="hashtag" translate="label" sortOrder="30" showInDefault="1" showInWebsite="0" showInStore="0">
@@ -97,8 +97,8 @@
                     <backend_model>GhoSter\AutoInstagramPost\Model\Config\Backend\Hashtag</backend_model>
                     <comment><![CDATA[Hashtag on Instagram Post should include these custom, no need to add # before hashtag, value should be stripped and remove spaces]]></comment>
                     <depends>
-                        <field id="*/general/enable">1</field>
-                        <field id="enable">1</field>
+                        <field id="*/general/enabled">1</field>
+                        <field id="enabled">1</field>
                         <field id="enable_custom">1</field>
                     </depends>
                 </field>
@@ -106,8 +106,8 @@
                     <label>Description Template</label>
                     <comment><![CDATA[{{CUSTOMHASTAG}} {{CATEGORYHASHTAG}} {{PRODUCTDESC}} {{PRODUCTNAME}}</br>Instagram caption character limit: 2,200 characters</br>Instagram hashtag limit: 30 hashtags</br>Instagram bio character limit: 150 characters]]></comment>
                     <depends>
-                        <field id="*/general/enable">1</field>
-                        <field id="enable">1</field>
+                        <field id="*/general/enabled">1</field>
+                        <field id="enabled">1</field>
                     </depends>
                 </field>
             </group>
@@ -117,7 +117,7 @@
                     <label>Enable Scheduled Auto Post</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <depends>
-                        <field id="*/general/enable">1</field>
+                        <field id="*/general/enabled">1</field>
                     </depends>
                 </field>
                 <field id="time" translate="label" type="time" sortOrder="20" showInDefault="1" showInWebsite="0" showInStore="0">
@@ -137,7 +137,7 @@
                 <field id="limit" translate="label" type="text" sortOrder="40" showInDefault="1" showInWebsite="0" showInStore="0" canRestore="1">
                     <label>Limit Number of Posts</label>
                     <depends>
-                        <field id="enable">1</field>
+                        <field id="enabled">1</field>
                     </depends>
                     <validate>validate-zero-or-greater</validate>
                 </field>
