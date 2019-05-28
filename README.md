@@ -6,6 +6,7 @@ This Magento 2 extension Auto Instagram Post allows you add your products immedi
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/bf0757d0063e489eb3bff2479964fce2)](https://www.codacy.com/app/GhoSterInc/AutoInstagramPost?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=tuyennn/AutoInstagramPost&amp;utm_campaign=Badge_Grade)
 [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.me/thinghost)
+[![Build Status](https://travis-ci.org/tuyennn/AutoInstagramPost.svg?branch=master)](https://travis-ci.org/tuyennn/AutoInstagramPost)
 ![Version 1.1.5](https://img.shields.io/badge/Version-1.1.6-green.svg)
 
 ---
