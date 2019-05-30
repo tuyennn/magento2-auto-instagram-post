@@ -2,8 +2,8 @@
 
 namespace GhoSter\AutoInstagramPost\Model;
 
-use Magento\Catalog\Model\Product;
 use GhoSter\AutoInstagramPost\Model\Item as InstagramItem;
+use Magento\Catalog\Model\Product;
 use GhoSter\AutoInstagramPost\Model\ItemFactory;
 
 /**
@@ -47,28 +47,21 @@ class Logger
     {
         if ($type) {
 
-            try {
-
-                if ($type == InstagramItem::TYPE_SUCCESS) {
-                    $product->setData('posted_to_instagram', 1);
-                } elseif ($type == InstagramItem::TYPE_ERROR) {
-                    $product->setData('posted_to_instagram', 0);
-                }
-
-                $product->getResource()->saveAttribute($product, 'posted_to_instagram');
-
-                /** @var $item InstagramItem */
-                $item = $this->_itemFactory->create();
-                $item->setProductId($product->getId());
-                $item->setType($type);
-                $item->setMessages($this->_jsonHelper->jsonEncode($result));
-                $item->setCreatedAt(date('Y-m-d h:i:s'));
-                $item->save();
-
-            } catch (\Exception $e) {
-
+            if ($type == InstagramItem::TYPE_SUCCESS) {
+                $product->setData('posted_to_instagram', 1);
+            } elseif ($type == InstagramItem::TYPE_ERROR) {
+                $product->setData('posted_to_instagram', 0);
             }
 
+            $product->getResource()->saveAttribute($product, 'posted_to_instagram');
+
+            /** @var $item InstagramItem */
+            $item = $this->_itemFactory->create();
+            $item->setProductId($product->getId());
+            $item->setType($type);
+            $item->setMessages($this->_jsonHelper->jsonEncode($result));
+            $item->setCreatedAt(date('Y-m-d h:i:s'));
+            $item->save();
         }
     }
 }

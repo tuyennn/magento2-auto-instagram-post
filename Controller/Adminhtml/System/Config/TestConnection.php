@@ -24,7 +24,6 @@ class TestConnection extends Action
      */
     protected $_instagram;
 
-
     /** @var InstagramConfig */
     protected $config;
 
@@ -111,7 +110,6 @@ class TestConnection extends Action
             $responseData['message'] = $e->getMessage();
             $this->logger->critical($e);
         }
-
 
         return $result->setData($responseData);
     }

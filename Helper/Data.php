@@ -297,7 +297,6 @@ class Data extends AbstractHelper
         return $html;
     }
 
-
     /**
      * @param $product Product
      * @return string
@@ -306,7 +305,6 @@ class Data extends AbstractHelper
     {
         return strip_tags($product->getDescription());
     }
-
 
     /**
      * Get Final Caption for Instagram Post

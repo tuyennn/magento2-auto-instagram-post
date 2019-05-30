@@ -35,7 +35,6 @@ class SchedulePost
      */
     private $logger;
 
-
     /**
      * SchedulePost constructor.
      * @param InstagramConfig $config

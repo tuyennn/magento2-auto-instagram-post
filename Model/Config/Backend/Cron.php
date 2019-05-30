@@ -15,15 +15,10 @@ use GhoSter\AutoInstagramPost\Model\Config as InstagramConfig;
 class Cron extends ConfigValue
 {
     const CRON_STRING_PATH = 'crontab/default/jobs/auto_instagram_post/schedule/cron_expr';
-
     const CRON_MODEL_PATH = 'crontab/default/jobs/auto_instagram_post/run/model';
-
     const XML_PATH_BACKUP_ENABLED = 'groups/cron/fields/enabled/value';
-
     const XML_PATH_BACKUP_TIME = 'groups/cron/fields/time/value';
-
     const XML_PATH_BACKUP_FREQUENCY = 'groups/cron/fields/frequency/value';
-
 
     /** @var InstagramConfig */
     protected $instagramConfig;
