@@ -13,7 +13,6 @@ use Psr\Log\LoggerInterface;
  *
  * @package GhoSter\AutoInstagramPost\Model
  */
-
 //@codingStandardsIgnoreFile
 class Instagram
 {
@@ -97,12 +96,13 @@ class Instagram
     /**
      * @return bool
      */
-    public function isLoggedIn(){
+    public function isLoggedIn()
+    {
 
         $account = $this->config->getAccountInformation();
         $username = isset($account['username']) ? ($account['username']) : null;
 
-        if(!empty($username)) {
+        if (!empty($username)) {
             if ((file_exists($this->IGDataPath . "$username-cookies.dat"))
                 && (file_exists($this->IGDataPath . "$username-userId.dat"))
                 && (file_exists($this->IGDataPath . "$username-token.dat"))
@@ -1672,7 +1672,7 @@ class Instagram
     {
         // This has 10 million possible hash subdivisions per clock second.
         $megaRandomHash = md5(number_format(microtime(true), 7, '', ''));
-        return 'android-'.substr($megaRandomHash, 16);
+        return 'android-' . substr($megaRandomHash, 16);
     }
 
     /**
@@ -1683,12 +1683,12 @@ class Instagram
      * @return bool
      */
     public static function isValidUUID(
-        $uuid)
-    {
+        $uuid
+    ) {
         if (!is_string($uuid)) {
             return false;
         }
-        return (bool) preg_match('#^[a-f\d]{8}-(?:[a-f\d]{4}-){3}[a-f\d]{12}$#D', $uuid);
+        return (bool)preg_match('#^[a-f\d]{8}-(?:[a-f\d]{4}-){3}[a-f\d]{12}$#D', $uuid);
     }
 
     public function generateUUID($keepDashes = true)

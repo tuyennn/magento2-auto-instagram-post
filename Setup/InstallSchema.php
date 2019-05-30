@@ -19,7 +19,6 @@ class InstallSchema implements InstallSchemaInterface
      */
     protected $eventManager;
 
-
     /**
      * @var LoggerInterface
      */
@@ -117,11 +116,9 @@ class InstallSchema implements InstallSchemaInterface
 
             $installer->getConnection()->createTable($tableGroup);
 
-
         } catch (\Exception $e) {
             $this->logger->critical($e->getMessage());
         }
-
 
         $this->eventManager->dispatch('ghoster_option_module_install');
 

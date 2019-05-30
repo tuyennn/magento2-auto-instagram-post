@@ -4,6 +4,10 @@ namespace GhoSter\AutoInstagramPost\Ui\DataProvider\Product;
 
 use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory;
 
+/**
+ * Class DataProvider
+ * @package GhoSter\AutoInstagramPost\Ui\DataProvider\Product
+ */
 class DataProvider extends \Magento\Ui\DataProvider\AbstractDataProvider
 {
     /**

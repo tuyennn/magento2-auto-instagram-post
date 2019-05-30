@@ -25,7 +25,7 @@ class PostStatus extends AbstractSource implements SourceInterface, OptionSource
      *
      * @return string[]
      */
-    public static function getOptionArray()
+    public function getOptionArray()
     {
         return [self::STATUS_POSTED => __('Posted'), self::STATUS_UNPOSTED => __('UnPosted')];
     }
@@ -45,7 +45,6 @@ class PostStatus extends AbstractSource implements SourceInterface, OptionSource
 
         return $result;
     }
-
 
     /**
      * Retrieve option text by option value
