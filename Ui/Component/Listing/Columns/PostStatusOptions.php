@@ -1,5 +1,4 @@
 <?php
-
 namespace GhoSter\AutoInstagramPost\Ui\Component\Listing\Columns;
 
 use Magento\Ui\Component\Listing\Columns\Column;
@@ -8,6 +7,7 @@ use Magento\Ui\Component\Listing\Columns\Column;
  * Class PostStatusOptions
  * @package GhoSter\AutoInstagramPost\Ui\Component\Listing\Columns
  */
+// @codingStandardsIgnoreFile
 class PostStatusOptions extends Column
 {
 

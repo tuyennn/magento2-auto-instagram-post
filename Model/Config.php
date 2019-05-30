@@ -37,7 +37,6 @@ class Config
     const XML_PATH_CRON_FREQUENCY = 'auto_instagram_post/cron/frequency';
     const XML_PATH_CRON_LIMIT = 'auto_instagram_post/cron/limit';
 
-
     const SPACE_STRING = ' ';
     const DEFAULT_LIMIT_CRON = 10;
 

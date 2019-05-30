@@ -49,7 +49,6 @@ class ImageProcessor
         InstagramHelper $instagramHelper,
         DirectoryList $directoryList,
         DriverFile $driverFile
-
     ) {
         $this->config = $config;
         $this->instagramHelper = $instagramHelper;
@@ -99,7 +98,6 @@ class ImageProcessor
         } else {
             $baseDir = '';
         }
-
 
         if ($baseImage) {
             $imageDir = $baseDir . $baseImage;

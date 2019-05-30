@@ -11,6 +11,7 @@ use GhoSter\AutoInstagramPost\Model\Item as InstagramItem;
 use GhoSter\AutoInstagramPost\Model\ImageProcessor;
 use GhoSter\AutoInstagramPost\Model\Config as InstagramConfig;
 use GhoSter\AutoInstagramPost\Helper\Data as InstagramHelper;
+use Psr\Log\LoggerInterface;
 
 /**
  * Class Worker
@@ -38,6 +39,9 @@ class Worker implements WorkerInterface
      */
     protected $logger;
 
+    /** @var LoggerInterface */
+    protected $defaultLogger;
+
     /**
      * @var ImageProcessor
      */
@@ -60,13 +64,15 @@ class Worker implements WorkerInterface
      * @param Instagram $instagram
      * @param InstagramLogger $logger
      * @param ImageProcessor $imageProcessor
+     * @param LoggerInterface $defaultLogger
      */
     public function __construct(
         InstagramConfig $config,
         InstagramHelper $instagramHelper,
         Instagram $instagram,
         InstagramLogger $logger,
-        ImageProcessor $imageProcessor
+        ImageProcessor $imageProcessor,
+        LoggerInterface $defaultLogger
     ) {
         $this->config = $config;
         $this->instagramHelper = $instagramHelper;
@@ -74,13 +80,13 @@ class Worker implements WorkerInterface
         $this->logger = $logger;
         $this->imageProcessor = $imageProcessor;
         $this->account = $this->config->getAccountInformation();
+        $this->defaultLogger = $defaultLogger;
 
         $this->setInstagramUser();
-
         try {
             $this->loginInstagram();
         } catch (\Exception $e) {
-
+            $this->defaultLogger->critical($e->getMessage());
         }
     }
 
@@ -96,8 +102,9 @@ class Worker implements WorkerInterface
     {
         $image = $this->imageProcessor->processBaseImage($product);
 
-        if ($image && $this->isLoggedIn) {
-
+        if ($image
+            && $this->isLoggedIn
+        ) {
             try {
                 $caption = $this->instagramHelper->getInstagramPostDescription($product);
 
@@ -110,7 +117,7 @@ class Worker implements WorkerInterface
                 return $result;
 
             } catch (\Exception $e) {
-
+                $this->defaultLogger->critical($e->getMessage());
             }
         }
 

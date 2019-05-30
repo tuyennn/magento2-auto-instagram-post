@@ -41,5 +41,4 @@ class Item extends AbstractDb
     {
         $this->_init('ghoster_instagram_auto_post', 'id');
     }
-
 }

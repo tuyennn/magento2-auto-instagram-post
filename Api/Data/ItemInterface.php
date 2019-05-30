@@ -27,13 +27,11 @@ interface ItemInterface
      */
     public function getProductId();
 
-
     /**
      * @param integer $product_id
      * @return void
      */
     public function setProductId($product_id);
-
 
     /**
      * @return string
@@ -45,7 +43,6 @@ interface ItemInterface
      * @return void
      */
     public function setType($type);
-
 
     /**
      * @return string

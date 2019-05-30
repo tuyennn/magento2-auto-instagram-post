@@ -38,7 +38,13 @@ class ProductSaveAfter implements ObserverInterface
     /** @var InstagramWorker */
     protected $instagramWorker;
 
-
+    /**
+     * ProductSaveAfter constructor.
+     * @param ActionContext $context
+     * @param InstagramHelper $instagramHelper
+     * @param InstagramConfig $config
+     * @param InstagramWorker $instagramWorker
+     */
     public function __construct(
         ActionContext $context,
         InstagramHelper $instagramHelper,
@@ -50,7 +56,6 @@ class ProductSaveAfter implements ObserverInterface
         $this->instagramWorker = $instagramWorker;
         $this->messageManager = $context->getMessageManager();
     }
-
 
     /**
      * Execute observer

@@ -42,7 +42,6 @@ class MassPost extends Action
      */
     protected $collectionFactory;
 
-
     /**
      * MassPost constructor.
      *

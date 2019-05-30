@@ -4,6 +4,10 @@ namespace GhoSter\AutoInstagramPost\Block\Adminhtml;
 
 use Magento\Eav\Setup\EavSetup;
 
+/**
+ * Class Product
+ * @package GhoSter\AutoInstagramPost\Block\Adminhtml
+ */
 class Product extends \Magento\Backend\Block\Widget\Container
 {
     /**
@@ -41,7 +45,6 @@ class Product extends \Magento\Backend\Block\Widget\Container
         $this->_typeFactory = $typeFactory;
         parent::__construct($context, $data);
     }
-
 
     /**
      * Prepare button and grid

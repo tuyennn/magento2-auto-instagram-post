@@ -29,7 +29,6 @@ class InstallData implements InstallDataInterface
      */
     private $eavSetupFactory;
 
-
     /**
      * @var AttributeFactory
      */
@@ -54,7 +53,6 @@ class InstallData implements InstallDataInterface
      * @var AttributeManagement
      */
     protected $attributeManagement;
-
 
     /**
      * Init
@@ -96,12 +94,12 @@ class InstallData implements InstallDataInterface
             [
                 'type' => 'int',
                 'group' => 'Auto Instagram Post',
-                'backend' => 'Magento\Catalog\Model\Product\Attribute\Backend\Boolean',
+                'backend' => \Magento\Catalog\Model\Product\Attribute\Backend\Boolean::class,
                 'frontend' => '',
                 'label' => 'Instagram Status',
                 'input' => 'select',
                 'class' => '',
-                'source' => 'Magento\Eav\Model\Entity\Attribute\Source\Boolean',
+                'source' => \Magento\Eav\Model\Entity\Attribute\Source\Boolean::class,
                 'global' => Attribute\ScopedAttributeInterface::SCOPE_GLOBAL,
                 'visible' => false,
                 'required' => false,
