@@ -11,9 +11,7 @@ use Magento\Framework\Setup\ModuleDataSetupInterface;
 use Magento\Eav\Model\Entity\Attribute;
 use Magento\Eav\Model\Entity\AttributeFactory;
 use Magento\Eav\Model\AttributeManagement;
-use Magento\Eav\Model\Entity\Attribute\Group;
 use Magento\Eav\Model\Entity\Attribute\GroupFactory;
-use Magento\Eav\Model\Entity\Attribute\Set;
 use Magento\Eav\Model\Entity\Attribute\SetFactory;
 use Magento\Eav\Model\Entity\TypeFactory;
 
@@ -22,6 +20,10 @@ use Magento\Eav\Model\Entity\TypeFactory;
  */
 class InstallData implements InstallDataInterface
 {
+
+    const GROUP_NAME = 'Auto Instagram Post';
+    const ATTRIBUTE_CODE = 'posted_to_instagram';
+
     /**
      * EAV setup factory
      *
@@ -55,9 +57,13 @@ class InstallData implements InstallDataInterface
     protected $attributeManagement;
 
     /**
-     * Init
-     *
+     * InstallData constructor.
      * @param EavSetupFactory $eavSetupFactory
+     * @param AttributeFactory $attributeFactory
+     * @param SetFactory $attributeSetFactory
+     * @param GroupFactory $attributeGroupFactory
+     * @param TypeFactory $typeFactory
+     * @param AttributeManagement $attributeManagement
      */
     public function __construct(
         EavSetupFactory $eavSetupFactory,
@@ -87,13 +93,12 @@ class InstallData implements InstallDataInterface
         /**
          * Add attributes to the eav/attribute
          */
-
         $eavSetup->addAttribute(
             \Magento\Catalog\Model\Product::ENTITY,
-            'posted_to_instagram',
+            self::ATTRIBUTE_CODE,
             [
                 'type' => 'int',
-                'group' => 'Auto Instagram Post',
+                'group' => self::GROUP_NAME,
                 'backend' => \Magento\Catalog\Model\Product\Attribute\Backend\Boolean::class,
                 'frontend' => '',
                 'label' => 'Instagram Status',
@@ -118,43 +123,31 @@ class InstallData implements InstallDataInterface
             ]
         );
 
-        $this->addAttributeToAllAttributeSets('posted_to_instagram', '');
-    }
-
-    public function addAttributeToAllAttributeSets($attributeCode, $attributeGroupCode)
-    {
         /** @var Attribute $attribute */
         $entityType = $this->eavTypeFactory->create()->loadByCode(\Magento\Catalog\Model\Product::ENTITY);
-        $attribute = $this->attributeFactory->create()->loadByCode($entityType->getId(), $attributeCode);
+        $attribute = $this->attributeFactory->create()->loadByCode($entityType->getId(), self::ATTRIBUTE_CODE);
 
-        if (!$attribute->getId()) {
-            return false;
+        if ($attribute->getId()) {
+
+            $attributeSetIds = $eavSetup->getAllAttributeSetIds($entityType->getId());
+
+            foreach ($attributeSetIds as $attributeSetId) {
+                $eavSetup->addAttributeGroup($entityType->getId(), $attributeSetId, self::GROUP_NAME, 100);
+                $attributeGroupId = $eavSetup->getAttributeGroupId(
+                    $entityType->getId(),
+                    $attributeSetId,
+                    self::GROUP_NAME
+                );
+                // Add existing attribute to group
+                $attributeId = $eavSetup->getAttributeId($entityType->getId(), self::ATTRIBUTE_CODE);
+                $eavSetup->addAttributeToGroup(
+                    $entityType->getId(),
+                    $attributeSetId,
+                    $attributeGroupId,
+                    $attributeId,
+                    null
+                );
+            }
         }
-
-        /** @var \Magento\Eav\Model\ResourceModel\Entity\Attribute\Set\Collection $setCollection */
-        $setCollection = $this->attributeSetFactory->create()->getCollection();
-        $setCollection->addFieldToFilter('entity_type_id', $entityType->getId());
-
-        /** @var Set $attributeSet */
-        foreach ($setCollection as $attributeSet) {
-            /** @var Group $group */
-            $group = $this->attributeGroupFactory->create()->getCollection()
-                ->addFieldToFilter('attribute_group_code', ['eq' => $attributeGroupCode])
-                ->addFieldToFilter('attribute_set_id', ['eq' => $attributeSet->getId()])
-                ->getFirstItem();
-
-            $groupId = $group->getId() ?: $attributeSet->getDefaultGroupId();
-
-            // Assign:
-            $this->attributeManagement->assign(
-                \Magento\Catalog\Model\Product::ENTITY,
-                $attributeSet->getId(),
-                $groupId,
-                $attributeCode,
-                $attributeSet->getCollection()->count() * 10
-            );
-        }
-
-        return true;
     }
 }
