@@ -67,6 +67,29 @@ class Instagram
 
     }
 
+    public function generateDeviceId()
+    {
+        // This has 10 million possible hash subdivisions per clock second.
+        $megaRandomHash = md5(number_format(microtime(true), 7, '', ''));
+        return 'android-' . substr($megaRandomHash, 16);
+    }
+
+    /**
+     * Checks whether supplied UUID is valid or not.
+     *
+     * @param string $uuid UUID to check.
+     *
+     * @return bool
+     */
+    public static function isValidUUID(
+        $uuid
+    ) {
+        if (!is_string($uuid)) {
+            return false;
+        }
+        return (bool)preg_match('#^[a-f\d]{8}-(?:[a-f\d]{4}-){3}[a-f\d]{12}$#D', $uuid);
+    }
+
     /**
      * Set the user. Manage multiple accounts.
      *
@@ -91,6 +114,22 @@ class Instagram
             $this->rankToken = $this->usernameId . '_' . $this->uuid;
             $this->token = trim(file_get_contents($this->IGDataPath . "$username-token.dat"));
         }
+    }
+
+    public function generateUUID($keepDashes = true)
+    {
+        $uuid = sprintf(
+            '%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
+            mt_rand(0, 0xffff),
+            mt_rand(0, 0xffff),
+            mt_rand(0, 0xffff),
+            mt_rand(0, 0x0fff) | 0x4000,
+            mt_rand(0, 0x3fff) | 0x8000,
+            mt_rand(0, 0xffff),
+            mt_rand(0, 0xffff),
+            mt_rand(0, 0xffff)
+        );
+        return $keepDashes ? $uuid : str_replace('-', '', $uuid);
     }
 
     /**
@@ -172,6 +211,82 @@ class Instagram
         return true;
     }
 
+    /**
+     * @param $endpoint
+     * @param null $post
+     * @param bool $login
+     * @return array
+     * @throws \Exception
+     */
+    protected function request($endpoint, $post = null, $login = false)
+    {
+        if (!$this->isLoggedIn && !$login) {
+            throw new \Exception("Not logged in\n");
+        }
+
+        $headers = [
+            'Connection: close',
+            'Accept: */*',
+            'Content-type: application/x-www-form-urlencoded; charset=UTF-8',
+            'Cookie2: $Version=1',
+            'Accept-Language: en-US',
+        ];
+
+        $ch = curl_init();
+
+        curl_setopt($ch, CURLOPT_URL, self::API_URL . $endpoint);
+        curl_setopt($ch, CURLOPT_USERAGENT, self::USER_AGENT);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+        curl_setopt($ch, CURLOPT_HEADER, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        curl_setopt($ch, CURLOPT_VERBOSE, false);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+        curl_setopt($ch, CURLOPT_COOKIEFILE, $this->IGDataPath . "$this->username-cookies.dat");
+        curl_setopt($ch, CURLOPT_COOKIEJAR, $this->IGDataPath . "$this->username-cookies.dat");
+
+        if ($post) {
+            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $post);
+        }
+
+        $resp = curl_exec($ch);
+        $header_len = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
+        $header = substr($resp, 0, $header_len);
+        $body = substr($resp, $header_len);
+
+        curl_close($ch);
+
+        if ($this->debug) {
+            $this->logger->critical("REQUEST: $endpoint\n");
+            if (!is_null($post)) {
+                if (!is_array($post)) {
+                    $this->logger->critical('DATA: ' . urldecode($post) . "\n");
+
+                }
+            }
+            $this->logger->critical("RESPONSE: $body\n\n");
+        }
+
+        return [$header, json_decode($body, true)];
+    }
+
+    /**
+     * @param $data
+     * @return string
+     */
+    public function generateSignature($data)
+    {
+        $hash = hash_hmac('sha256', $data, self::IG_SIG_KEY);
+
+        return 'ig_sig_key_version=' . self::SIG_KEY_VERSION . '&signed_body=' . $hash . '.' . urlencode($data);
+    }
+
+    /**
+     * @return mixed
+     * @throws \Exception
+     */
     public function syncFeatures()
     {
         $data = json_encode([
@@ -195,24 +310,6 @@ class Instagram
         return $this->request('feed/timeline/')[1];
     }
 
-    protected function megaphoneLog()
-    {
-        return $this->request('megaphone/log/')[1];
-    }
-
-    protected function expose()
-    {
-        $data = json_encode([
-            '_uuid' => $this->uuid,
-            '_uid' => $this->usernameId,
-            'id' => $this->usernameId,
-            '_csrftoken' => $this->token,
-            'experiment' => 'ig_android_profile_contextual_feed',
-        ]);
-
-        $this->request('qe/expose/', $this->generateSignature($data))[1];
-    }
-
     /**
      * Login to Instagram.
      *
@@ -228,110 +325,6 @@ class Instagram
         } else {
             return false;
         }
-    }
-
-    /**
-     * Upload photo to Instagram.
-     *
-     * @param string $photo
-     *                        Path to your photo
-     * @param string $caption
-     *                        Caption to be included in your photo.
-     *
-     * @return array
-     *               Upload data
-     * @throws \Exception
-     */
-    public function uploadPhoto($photo, $caption = null, $upload_id = null)
-    {
-        $endpoint = self::API_URL . 'upload/photo/';
-        $boundary = $this->uuid;
-
-        if (!is_null($upload_id)) {
-            $fileToUpload = $this->createVideoIcon($photo);
-        } else {
-            $upload_id = number_format(round(microtime(true) * 1000), 0, '', '');
-            $fileToUpload = file_get_contents($photo);
-        }
-
-        $bodies = [
-            [
-                'type' => 'form-data',
-                'name' => 'upload_id',
-                'data' => $upload_id,
-            ],
-            [
-                'type' => 'form-data',
-                'name' => '_uuid',
-                'data' => $this->uuid,
-            ],
-            [
-                'type' => 'form-data',
-                'name' => '_csrftoken',
-                'data' => $this->token,
-            ],
-            [
-                'type' => 'form-data',
-                'name' => 'image_compression',
-                'data' => '{"lib_name":"jt","lib_version":"1.3.0","quality":"70"}',
-            ],
-            [
-                'type' => 'form-data',
-                'name' => 'photo',
-                'data' => $fileToUpload,
-                'filename' => 'pending_media_' . number_format(round(microtime(true) * 1000), 0, '', '') . '.jpg',
-                'headers' => [
-                    'Content-Transfer-Encoding: binary',
-                    'Content-type: application/octet-stream',
-                ],
-            ],
-        ];
-
-        $data = $this->buildBody($bodies, $boundary);
-        $headers = [
-            'Connection: close',
-            'Accept: */*',
-            'Content-type: multipart/form-data; boundary=' . $boundary,
-            'Content-Length: ' . strlen($data),
-            'Cookie2: $Version=1',
-            'Accept-Language: en-US',
-            'Accept-Encoding: gzip',
-        ];
-
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $endpoint);
-        curl_setopt($ch, CURLOPT_USERAGENT, self::USER_AGENT);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-        curl_setopt($ch, CURLOPT_HEADER, true);
-        curl_setopt($ch, CURLOPT_VERBOSE, $this->debug);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-        curl_setopt($ch, CURLOPT_COOKIEFILE, $this->IGDataPath . "$this->username-cookies.dat");
-        curl_setopt($ch, CURLOPT_COOKIEJAR, $this->IGDataPath . "$this->username-cookies.dat");
-        curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
-
-        $resp = curl_exec($ch);
-        $header_len = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
-        $header = substr($resp, 0, $header_len);
-        $upload = json_decode(substr($resp, $header_len), true);
-
-        curl_close($ch);
-
-        if ($upload['status'] === 'fail') {
-            return [];
-        }
-
-        if ($this->debug) {
-            $this->logger->critical('RESPONSE: ' . substr($resp, $header_len) . "\n\n");
-        }
-
-        $configure = $this->configure($upload['upload_id'], $photo, $caption);
-        $this->expose();
-
-        return $configure;
     }
 
     /**
@@ -452,8 +445,6 @@ class Instagram
 
         if ($upload['status'] === 'fail') {
             throw new \Exception($upload['message']);
-
-            return;
         }
 
         if ($this->debug) {
@@ -467,6 +458,349 @@ class Instagram
         return $configure;
     }
 
+    /**
+     * @param $bodies
+     * @param $boundary
+     * @return string
+     */
+    protected function buildBody($bodies, $boundary)
+    {
+        $body = '';
+        foreach ($bodies as $b) {
+            $body .= '--' . $boundary . "\r\n";
+            $body .= 'Content-Disposition: ' . $b['type'] . '; name="' . $b['name'] . '"';
+            if (isset($b['filename'])) {
+                $ext = pathinfo($b['filename'], PATHINFO_EXTENSION);
+                $body .= '; filename="' . 'pending_media_' . number_format(round(microtime(true) * 1000), 0, '',
+                        '') . '.' . $ext . '"';
+            }
+            if (isset($b['headers']) && is_array($b['headers'])) {
+                foreach ($b['headers'] as $header) {
+                    $body .= "\r\n" . $header;
+                }
+            }
+
+            $body .= "\r\n\r\n" . $b['data'] . "\r\n";
+        }
+        $body .= '--' . $boundary . '--';
+
+        return $body;
+    }
+
+    /**
+     * @param $upload_id
+     * @param $video
+     * @param string $caption
+     * @return mixed
+     * @throws \Exception
+     */
+    protected function configureVideo($upload_id, $video, $caption = '')
+    {
+        $this->uploadPhoto($video, $caption, $upload_id);
+
+        $size = getimagesize($video)[0];
+
+        $post = json_encode([
+            'upload_id' => $upload_id,
+            'source_type' => '3',
+            'poster_frame_index' => 0,
+            'length' => 0.00,
+            'audio_muted' => false,
+            'filter_type' => '0',
+            'video_result' => 'deprecated',
+            'clips' => [
+                'length' => $this->getSeconds($video),
+                'source_type' => '3',
+                'camera_position' => 'back',
+            ],
+            'extra' => [
+                'source_width' => 960,
+                'source_height' => 1280,
+            ],
+            'device' => [
+                'manufacturer' => 'Xiaomi',
+                'model' => 'HM 1SW',
+                'android_version' => 18,
+                'android_release' => '4.3',
+            ],
+            '_csrftoken' => $this->token,
+            '_uuid' => $this->uuid,
+            '_uid' => $this->usernameId,
+            'caption' => $caption,
+        ]);
+
+        $post = str_replace('"length":0', '"length":0.00', $post);
+
+        return $this->request('media/configure/?video=1', $this->generateSignature($post))[1];
+    }
+
+    /**
+     * Upload photo to Instagram.
+     *
+     * @param string $photo
+     *                        Path to your photo
+     * @param string $caption
+     *                        Caption to be included in your photo.
+     *
+     * @return array
+     *               Upload data
+     * @throws \Exception
+     */
+    public function uploadPhoto($photo, $caption = null, $upload_id = null)
+    {
+        $endpoint = self::API_URL . 'upload/photo/';
+        $boundary = $this->uuid;
+
+        if (!is_null($upload_id)) {
+            $fileToUpload = $this->createVideoIcon($photo);
+        } else {
+            $upload_id = number_format(round(microtime(true) * 1000), 0, '', '');
+            $fileToUpload = file_get_contents($photo);
+        }
+
+        $bodies = [
+            [
+                'type' => 'form-data',
+                'name' => 'upload_id',
+                'data' => $upload_id,
+            ],
+            [
+                'type' => 'form-data',
+                'name' => '_uuid',
+                'data' => $this->uuid,
+            ],
+            [
+                'type' => 'form-data',
+                'name' => '_csrftoken',
+                'data' => $this->token,
+            ],
+            [
+                'type' => 'form-data',
+                'name' => 'image_compression',
+                'data' => '{"lib_name":"jt","lib_version":"1.3.0","quality":"70"}',
+            ],
+            [
+                'type' => 'form-data',
+                'name' => 'photo',
+                'data' => $fileToUpload,
+                'filename' => 'pending_media_' . number_format(round(microtime(true) * 1000), 0, '', '') . '.jpg',
+                'headers' => [
+                    'Content-Transfer-Encoding: binary',
+                    'Content-type: application/octet-stream',
+                ],
+            ],
+        ];
+
+        $data = $this->buildBody($bodies, $boundary);
+        $headers = [
+            'Connection: close',
+            'Accept: */*',
+            'Content-type: multipart/form-data; boundary=' . $boundary,
+            'Content-Length: ' . strlen($data),
+            'Cookie2: $Version=1',
+            'Accept-Language: en-US',
+            'Accept-Encoding: gzip',
+        ];
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $endpoint);
+        curl_setopt($ch, CURLOPT_USERAGENT, self::USER_AGENT);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+        curl_setopt($ch, CURLOPT_HEADER, true);
+        curl_setopt($ch, CURLOPT_VERBOSE, $this->debug);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        curl_setopt($ch, CURLOPT_COOKIEFILE, $this->IGDataPath . "$this->username-cookies.dat");
+        curl_setopt($ch, CURLOPT_COOKIEJAR, $this->IGDataPath . "$this->username-cookies.dat");
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+
+        $resp = curl_exec($ch);
+        $header_len = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
+        $header = substr($resp, 0, $header_len);
+        $upload = json_decode(substr($resp, $header_len), true);
+
+        curl_close($ch);
+
+        if ($upload['status'] === 'fail') {
+            return [];
+        }
+
+        if ($this->debug) {
+            $this->logger->critical('RESPONSE: ' . substr($resp, $header_len) . "\n\n");
+        }
+
+        $configure = $this->configure($upload['upload_id'], $photo, $caption);
+        $this->expose();
+
+        return $configure;
+    }
+
+    /**
+     * Creating a video icon/thumbnail
+     * @param string $file
+     *    path to the video file
+     * @return image
+     *    icon/thumbnail for the video
+     */
+
+    function createVideoIcon($file)
+    {
+        /* should install ffmpeg for the method to work successfully  */
+        $ffmpeg = $this->checkFFMPEG();
+        if ($ffmpeg) {
+            //generate thumbnail
+            $preview = sys_get_temp_dir() . '/' . md5($file) . '.jpg';
+            @unlink($preview);
+
+            //capture video preview
+            $command = $ffmpeg . ' -i "' . $file . '" -f mjpeg -ss 00:00:01 -vframes 1 "' . $preview . '" 2>&1';
+            @exec($command);
+
+            return $this->createIconGD($preview);
+        }
+    }
+
+    /**
+     * Check for ffmpeg/avconv dependencies
+     * @return string/boolean
+     *    name of the library if present, false otherwise
+     */
+
+    function checkFFMPEG()
+    {
+        @exec('ffmpeg -version 2>&1', $output, $returnvalue);
+        if ($returnvalue === 0) {
+            return 'ffmpeg';
+        }
+        @exec('avconv -version 2>&1', $output, $returnvalue);
+        if ($returnvalue === 0) {
+            return 'avconv';
+        }
+
+        return false;
+    }
+
+    /**
+     * Implements the actual logic behind creating the icon/thumbnail
+     *
+     * @param string $file
+     *    path to the file name
+     *
+     * @return image
+     *    icon/thumbnail for the video
+     */
+    function createIconGD($file, $size = 100, $raw = true)
+    {
+        list($width, $height) = getimagesize($file);
+        if ($width > $height) {
+            $y = 0;
+            $x = ($width - $height) / 2;
+            $smallestSide = $height;
+        } else {
+            $x = 0;
+            $y = ($height - $width) / 2;
+            $smallestSide = $width;
+        }
+
+        $image_p = imagecreatetruecolor($size, $size);
+        $image = imagecreatefromstring(file_get_contents($file));
+
+        imagecopyresampled($image_p, $image, 0, 0, $x, $y, $size, $size, $smallestSide, $smallestSide);
+        ob_start();
+        imagejpeg($image_p, null, 95);
+        $i = ob_get_contents();
+        ob_end_clean();
+
+        imagedestroy($image);
+        imagedestroy($image_p);
+
+        return $i;
+    }
+
+    protected function configure($upload_id, $photo, $caption = '')
+    {
+        $size = getimagesize($photo)[0];
+
+        $post = json_encode([
+            'upload_id' => $upload_id,
+            'camera_model' => 'HM1S',
+            'source_type' => 3,
+            'date_time_original' => date('Y:m:d H:i:s'),
+            'camera_make' => 'XIAOMI',
+            'edits' => [
+                'crop_original_size' => [$size, $size],
+                'crop_zoom' => 1.3333334,
+                'crop_center' => [0.0, -0.0],
+            ],
+            'extra' => [
+                'source_width' => $size,
+                'source_height' => $size,
+            ],
+            'device' => [
+                'manufacturer' => 'Xiaomi',
+                'model' => 'HM 1SW',
+                'android_version' => 18,
+                'android_release' => '4.3',
+            ],
+            '_csrftoken' => $this->token,
+            '_uuid' => $this->uuid,
+            '_uid' => $this->usernameId,
+            'caption' => $caption,
+        ]);
+
+        $post = str_replace('"crop_center":[0,0]', '"crop_center":[0.0,-0.0]', $post);
+
+        return $this->request('media/configure/', $this->generateSignature($post))[1];
+    }
+
+    /**
+     * @throws \Exception
+     */
+    protected function expose()
+    {
+        $data = json_encode([
+            '_uuid' => $this->uuid,
+            '_uid' => $this->usernameId,
+            'id' => $this->usernameId,
+            '_csrftoken' => $this->token,
+            'experiment' => 'ig_android_profile_contextual_feed',
+        ]);
+
+        $this->request('qe/expose/', $this->generateSignature($data))[1];
+    }
+
+    /**
+     * Length of the file in Seconds
+     *
+     * @param string $file
+     *    path to the file name
+     *
+     * @return integer
+     *    length of the file in seconds
+     */
+
+    function getSeconds($file)
+    {
+        $ffmpeg = $this->checkFFMPEG();
+        if ($ffmpeg) {
+            $time = exec("$ffmpeg -i " . $file . " 2>&1 | grep 'Duration' | cut -d ' ' -f 4");
+            $duration = explode(':', $time);
+            $seconds = $duration[0] * 3600 + $duration[1] * 60 + round($duration[2]);
+
+            return $seconds;
+        }
+
+        return mt_rand(15, 300);
+    }
+
+    /**
+     * @param $media_id
+     * @param $recipients
+     * @param null $text
+     */
     public function direct_share($media_id, $recipients, $text = null)
     {
         if (!is_array($recipients)) {
@@ -540,82 +874,6 @@ class Instagram
         $upload = json_decode(substr($resp, $header_len), true);
 
         curl_close($ch);
-    }
-
-    protected function configureVideo($upload_id, $video, $caption = '')
-    {
-        $this->uploadPhoto($video, $caption, $upload_id);
-
-        $size = getimagesize($video)[0];
-
-        $post = json_encode([
-            'upload_id' => $upload_id,
-            'source_type' => '3',
-            'poster_frame_index' => 0,
-            'length' => 0.00,
-            'audio_muted' => false,
-            'filter_type' => '0',
-            'video_result' => 'deprecated',
-            'clips' => [
-                'length' => $this->getSeconds($video),
-                'source_type' => '3',
-                'camera_position' => 'back',
-            ],
-            'extra' => [
-                'source_width' => 960,
-                'source_height' => 1280,
-            ],
-            'device' => [
-                'manufacturer' => 'Xiaomi',
-                'model' => 'HM 1SW',
-                'android_version' => 18,
-                'android_release' => '4.3',
-            ],
-            '_csrftoken' => $this->token,
-            '_uuid' => $this->uuid,
-            '_uid' => $this->usernameId,
-            'caption' => $caption,
-        ]);
-
-        $post = str_replace('"length":0', '"length":0.00', $post);
-
-        return $this->request('media/configure/?video=1', $this->generateSignature($post))[1];
-    }
-
-    protected function configure($upload_id, $photo, $caption = '')
-    {
-        $size = getimagesize($photo)[0];
-
-        $post = json_encode([
-            'upload_id' => $upload_id,
-            'camera_model' => 'HM1S',
-            'source_type' => 3,
-            'date_time_original' => date('Y:m:d H:i:s'),
-            'camera_make' => 'XIAOMI',
-            'edits' => [
-                'crop_original_size' => [$size, $size],
-                'crop_zoom' => 1.3333334,
-                'crop_center' => [0.0, -0.0],
-            ],
-            'extra' => [
-                'source_width' => $size,
-                'source_height' => $size,
-            ],
-            'device' => [
-                'manufacturer' => 'Xiaomi',
-                'model' => 'HM 1SW',
-                'android_version' => 18,
-                'android_release' => '4.3',
-            ],
-            '_csrftoken' => $this->token,
-            '_uuid' => $this->uuid,
-            '_uid' => $this->usernameId,
-            'caption' => $caption,
-        ]);
-
-        $post = str_replace('"crop_center":[0,0]', '"crop_center":[0.0,-0.0]', $post);
-
-        return $this->request('media/configure/', $this->generateSignature($post))[1];
     }
 
     /**
@@ -753,14 +1011,14 @@ class Instagram
      * Sets account to public.
      *
      * @param string $photo
-     *   Path to photo
+     * @return bool
      */
+
     public function changeProfilePicture($photo)
     {
         if (is_null($photo)) {
             $this->logger->critical("Photo not valid\n\n");
-
-            return;
+            return false;
         }
 
         $uData = json_encode([
@@ -931,6 +1189,17 @@ class Instagram
     }
 
     /**
+     * Get self username info.
+     *
+     * @return array
+     *   Username data
+     */
+    public function getSelfUsernameInfo()
+    {
+        return $this->getUsernameInfo($this->usernameId);
+    }
+
+    /**
      * Get username info.
      *
      * @param string $usernameId
@@ -942,17 +1211,6 @@ class Instagram
     public function getUsernameInfo($usernameId)
     {
         return $this->request("users/$usernameId/info/")[1];
-    }
-
-    /**
-     * Get self username info.
-     *
-     * @return array
-     *   Username data
-     */
-    public function getSelfUsernameInfo()
-    {
-        return $this->getUsernameInfo($this->usernameId);
     }
 
     /**
@@ -968,8 +1226,6 @@ class Instagram
 
         if ($activity['status'] !== 'ok') {
             throw new \Exception($activity['message'] . "\n");
-
-            return;
         }
 
         return $activity;
@@ -988,8 +1244,6 @@ class Instagram
 
         if ($activity['status'] !== 'ok') {
             throw new \Exception($activity['message'] . "\n");
-
-            return;
         }
 
         return $activity;
@@ -1008,11 +1262,20 @@ class Instagram
 
         if ($inbox['status'] !== 'ok') {
             throw new \Exception($inbox['message'] . "\n");
-
-            return;
         }
 
         return $inbox;
+    }
+
+    /**
+     * Get self user tags.
+     *
+     * @return array
+     *   self user tags data
+     */
+    public function getSelfUserTags()
+    {
+        return $this->getUserTags($this->usernameId);
     }
 
     /**
@@ -1030,22 +1293,9 @@ class Instagram
 
         if ($tags['status'] !== 'ok') {
             throw new \Exception($tags['message'] . "\n");
-
-            return;
         }
 
         return $tags;
-    }
-
-    /**
-     * Get self user tags.
-     *
-     * @return array
-     *   self user tags data
-     */
-    public function getSelfUserTags()
-    {
-        return $this->getUserTags($this->usernameId);
     }
 
     /**
@@ -1063,8 +1313,6 @@ class Instagram
 
         if ($userFeed['status'] !== 'ok') {
             throw new \Exception($userFeed['message'] . "\n");
-
-            return;
         }
 
         return $userFeed;
@@ -1083,11 +1331,20 @@ class Instagram
         $likers = $this->request("media/$mediaId/likers/?")[1];
         if ($likers['status'] !== 'ok') {
             throw new \Exception($likers['message'] . "\n");
-
-            return;
         }
 
         return $likers;
+    }
+
+    /**
+     * Get self user locations media.
+     *
+     * @return array
+     *   Geo Media data
+     */
+    public function getSelfGeoMedia()
+    {
+        return $this->getGeoMedia($this->usernameId);
     }
 
     /**
@@ -1106,22 +1363,9 @@ class Instagram
 
         if ($locations['status'] !== 'ok') {
             throw new \Exception($locations['message'] . "\n");
-
-            return;
         }
 
         return $locations;
-    }
-
-    /**
-     * Get self user locations media.
-     *
-     * @return array
-     *   Geo Media data
-     */
-    public function getSelfGeoMedia()
-    {
-        return $this->getGeoMedia($this->usernameId);
     }
 
     /**
@@ -1140,8 +1384,6 @@ class Instagram
 
         if ($query['status'] !== 'ok') {
             throw new \Exception($query['message'] . "\n");
-
-            return;
         }
 
         return $query;
@@ -1162,8 +1404,6 @@ class Instagram
 
         if ($query['status'] !== 'ok') {
             throw new \Exception($query['message'] . "\n");
-
-            return;
         }
 
         return $query;
@@ -1185,8 +1425,6 @@ class Instagram
 
         if ($query['status'] !== 'ok') {
             throw new \Exception($query['message'] . "\n");
-
-            return;
         }
 
         return $query;
@@ -1222,8 +1460,6 @@ class Instagram
 
         if ($query['status'] !== 'ok') {
             throw new \Exception($query['message'] . "\n");
-
-            return;
         }
 
         return $query;
@@ -1245,41 +1481,9 @@ class Instagram
 
         if ($timeline['status'] !== 'ok') {
             throw new \Exception($timeline['message'] . "\n");
-
-            return;
         }
 
         return $timeline;
-    }
-
-    /**
-     * Get user feed.
-     * @param string $usernameId
-     *    Username id
-     * @param null $maxid
-     *    Max Id
-     * @param null $minTimestamp
-     *    Min timestamp
-     * @return array User feed data
-     *    User feed data
-     * @throws \Exception
-     */
-    public function getUserFeed($usernameId, $maxid = null, $minTimestamp = null)
-    {
-        $userFeed = $this->request(
-            "feed/user/$usernameId/?rank_token=$this->rankToken"
-            . (!is_null($maxid) ? "&max_id=" . $maxid : '')
-            . (!is_null($minTimestamp) ? "&min_timestamp=" . $minTimestamp : '')
-            . "&ranked_content=true"
-        )[1];
-
-        if ($userFeed['status'] !== 'ok') {
-            throw new \Exception($userFeed['message'] . "\n");
-
-            return;
-        }
-
-        return $userFeed;
     }
 
     /**
@@ -1304,8 +1508,6 @@ class Instagram
 
         if ($hashtagFeed['status'] !== 'ok') {
             throw new \Exception($hashtagFeed['message'] . "\n");
-
-            return;
         }
 
         return $hashtagFeed;
@@ -1330,8 +1532,6 @@ class Instagram
 
         if ($locationFeed['status'] !== 'ok') {
             throw new \Exception($locationFeed['message'] . "\n");
-
-            return;
         }
 
         return $locationFeed;
@@ -1359,22 +1559,9 @@ class Instagram
 
         if ($locationFeed['status'] !== 'ok') {
             throw new \Exception($locationFeed['message'] . "\n");
-
-            return;
         }
 
         return $locationFeed;
-    }
-
-    /**
-     * Get self user feed.
-     *
-     * @return array
-     *   User feed data
-     */
-    public function getSelfUserFeed()
-    {
-        return $this->getUserFeed($this->usernameId);
     }
 
     /**
@@ -1390,8 +1577,6 @@ class Instagram
 
         if ($popularFeed['status'] !== 'ok') {
             throw new \Exception($popularFeed['message'] . "\n");
-
-            return;
         }
 
         return $popularFeed;
@@ -1412,6 +1597,17 @@ class Instagram
     }
 
     /**
+     * Get self user followers.
+     *
+     * @return array
+     *   followers data
+     */
+    public function getSelfUserFollowers()
+    {
+        return $this->getUserFollowers($this->usernameId);
+    }
+
+    /**
      * Get user followers.
      *
      * @param string $usernameId
@@ -1423,17 +1619,6 @@ class Instagram
     public function getUserFollowers($usernameId, $maxid = null)
     {
         return $this->request("friendships/$usernameId/followers/?max_id=$maxid&ig_sig_key_version=" . self::SIG_KEY_VERSION . "&rank_token=$this->rankToken")[1];
-    }
-
-    /**
-     * Get self user followers.
-     *
-     * @return array
-     *   followers data
-     */
-    public function getSelfUserFollowers()
-    {
-        return $this->getUserFollowers($this->usernameId);
     }
 
     /**
@@ -1552,6 +1737,45 @@ class Instagram
     }
 
     /**
+     * Get self user feed.
+     *
+     * @return array
+     *   User feed data
+     */
+    public function getSelfUserFeed()
+    {
+        return $this->getUserFeed($this->usernameId);
+    }
+
+    /**
+     * Get user feed.
+     * @param string $usernameId
+     *    Username id
+     * @param null $maxid
+     *    Max Id
+     * @param null $minTimestamp
+     *    Min timestamp
+     * @return array User feed data
+     *    User feed data
+     * @throws \Exception
+     */
+    public function getUserFeed($usernameId, $maxid = null, $minTimestamp = null)
+    {
+        $userFeed = $this->request(
+            "feed/user/$usernameId/?rank_token=$this->rankToken"
+            . (!is_null($maxid) ? "&max_id=" . $maxid : '')
+            . (!is_null($minTimestamp) ? "&min_timestamp=" . $minTimestamp : '')
+            . "&ranked_content=true"
+        )[1];
+
+        if ($userFeed['status'] !== 'ok') {
+            throw new \Exception($userFeed['message'] . "\n");
+        }
+
+        return $userFeed;
+    }
+
+    /**
      * Follow.
      *
      * @param string $userId
@@ -1661,235 +1885,8 @@ class Instagram
         return $this->request('feed/liked/?')[1];
     }
 
-    public function generateSignature($data)
+    protected function megaphoneLog()
     {
-        $hash = hash_hmac('sha256', $data, self::IG_SIG_KEY);
-
-        return 'ig_sig_key_version=' . self::SIG_KEY_VERSION . '&signed_body=' . $hash . '.' . urlencode($data);
-    }
-
-    public function generateDeviceId()
-    {
-        // This has 10 million possible hash subdivisions per clock second.
-        $megaRandomHash = md5(number_format(microtime(true), 7, '', ''));
-        return 'android-' . substr($megaRandomHash, 16);
-    }
-
-    /**
-     * Checks whether supplied UUID is valid or not.
-     *
-     * @param string $uuid UUID to check.
-     *
-     * @return bool
-     */
-    public static function isValidUUID(
-        $uuid
-    ) {
-        if (!is_string($uuid)) {
-            return false;
-        }
-        return (bool)preg_match('#^[a-f\d]{8}-(?:[a-f\d]{4}-){3}[a-f\d]{12}$#D', $uuid);
-    }
-
-    public function generateUUID($keepDashes = true)
-    {
-        $uuid = sprintf(
-            '%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
-            mt_rand(0, 0xffff),
-            mt_rand(0, 0xffff),
-            mt_rand(0, 0xffff),
-            mt_rand(0, 0x0fff) | 0x4000,
-            mt_rand(0, 0x3fff) | 0x8000,
-            mt_rand(0, 0xffff),
-            mt_rand(0, 0xffff),
-            mt_rand(0, 0xffff)
-        );
-        return $keepDashes ? $uuid : str_replace('-', '', $uuid);
-    }
-
-    protected function buildBody($bodies, $boundary)
-    {
-        $body = '';
-        foreach ($bodies as $b) {
-            $body .= '--' . $boundary . "\r\n";
-            $body .= 'Content-Disposition: ' . $b['type'] . '; name="' . $b['name'] . '"';
-            if (isset($b['filename'])) {
-                $ext = pathinfo($b['filename'], PATHINFO_EXTENSION);
-                $body .= '; filename="' . 'pending_media_' . number_format(round(microtime(true) * 1000), 0, '',
-                        '') . '.' . $ext . '"';
-            }
-            if (isset($b['headers']) && is_array($b['headers'])) {
-                foreach ($b['headers'] as $header) {
-                    $body .= "\r\n" . $header;
-                }
-            }
-
-            $body .= "\r\n\r\n" . $b['data'] . "\r\n";
-        }
-        $body .= '--' . $boundary . '--';
-
-        return $body;
-    }
-
-    protected function request($endpoint, $post = null, $login = false)
-    {
-        if (!$this->isLoggedIn && !$login) {
-            throw new \Exception("Not logged in\n");
-
-            return;
-        }
-
-        $headers = [
-            'Connection: close',
-            'Accept: */*',
-            'Content-type: application/x-www-form-urlencoded; charset=UTF-8',
-            'Cookie2: $Version=1',
-            'Accept-Language: en-US',
-        ];
-
-        $ch = curl_init();
-
-        curl_setopt($ch, CURLOPT_URL, self::API_URL . $endpoint);
-        curl_setopt($ch, CURLOPT_USERAGENT, self::USER_AGENT);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-        curl_setopt($ch, CURLOPT_HEADER, true);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-        curl_setopt($ch, CURLOPT_VERBOSE, false);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
-        curl_setopt($ch, CURLOPT_COOKIEFILE, $this->IGDataPath . "$this->username-cookies.dat");
-        curl_setopt($ch, CURLOPT_COOKIEJAR, $this->IGDataPath . "$this->username-cookies.dat");
-
-        if ($post) {
-            curl_setopt($ch, CURLOPT_POST, true);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, $post);
-        }
-
-        $resp = curl_exec($ch);
-        $header_len = curl_getinfo($ch, CURLINFO_HEADER_SIZE);
-        $header = substr($resp, 0, $header_len);
-        $body = substr($resp, $header_len);
-
-        curl_close($ch);
-
-        if ($this->debug) {
-            $this->logger->critical("REQUEST: $endpoint\n");
-            if (!is_null($post)) {
-                if (!is_array($post)) {
-                    $this->logger->critical('DATA: ' . urldecode($post) . "\n");
-
-                }
-            }
-            $this->logger->critical("RESPONSE: $body\n\n");
-        }
-
-        return [$header, json_decode($body, true)];
-    }
-
-    /**
-     * Length of the file in Seconds
-     *
-     * @param string $file
-     *    path to the file name
-     *
-     * @return integer
-     *    length of the file in seconds
-     */
-
-    function getSeconds($file)
-    {
-        $ffmpeg = $this->checkFFMPEG();
-        if ($ffmpeg) {
-            $time = exec("$ffmpeg -i " . $file . " 2>&1 | grep 'Duration' | cut -d ' ' -f 4");
-            $duration = explode(':', $time);
-            $seconds = $duration[0] * 3600 + $duration[1] * 60 + round($duration[2]);
-
-            return $seconds;
-        }
-
-        return mt_rand(15, 300);
-    }
-
-    /**
-     * Check for ffmpeg/avconv dependencies
-     * @return string/boolean
-     *    name of the library if present, false otherwise
-     */
-
-    function checkFFMPEG()
-    {
-        @exec('ffmpeg -version 2>&1', $output, $returnvalue);
-        if ($returnvalue === 0) {
-            return 'ffmpeg';
-        }
-        @exec('avconv -version 2>&1', $output, $returnvalue);
-        if ($returnvalue === 0) {
-            return 'avconv';
-        }
-
-        return false;
-    }
-
-    /**
-     * Creating a video icon/thumbnail
-     * @param string $file
-     *    path to the video file
-     * @return image
-     *    icon/thumbnail for the video
-     */
-
-    function createVideoIcon($file)
-    {
-        /* should install ffmpeg for the method to work successfully  */
-        $ffmpeg = $this->checkFFMPEG();
-        if ($ffmpeg) {
-            //generate thumbnail
-            $preview = sys_get_temp_dir() . '/' . md5($file) . '.jpg';
-            @unlink($preview);
-
-            //capture video preview
-            $command = $ffmpeg . ' -i "' . $file . '" -f mjpeg -ss 00:00:01 -vframes 1 "' . $preview . '" 2>&1';
-            @exec($command);
-
-            return $this->createIconGD($preview);
-        }
-    }
-
-    /**
-     * Implements the actual logic behind creating the icon/thumbnail
-     *
-     * @param string $file
-     *    path to the file name
-     *
-     * @return image
-     *    icon/thumbnail for the video
-     */
-    function createIconGD($file, $size = 100, $raw = true)
-    {
-        list($width, $height) = getimagesize($file);
-        if ($width > $height) {
-            $y = 0;
-            $x = ($width - $height) / 2;
-            $smallestSide = $height;
-        } else {
-            $x = 0;
-            $y = ($height - $width) / 2;
-            $smallestSide = $width;
-        }
-
-        $image_p = imagecreatetruecolor($size, $size);
-        $image = imagecreatefromstring(file_get_contents($file));
-
-        imagecopyresampled($image_p, $image, 0, 0, $x, $y, $size, $size, $smallestSide, $smallestSide);
-        ob_start();
-        imagejpeg($image_p, null, 95);
-        $i = ob_get_contents();
-        ob_end_clean();
-
-        imagedestroy($image);
-        imagedestroy($image_p);
-
-        return $i;
+        return $this->request('megaphone/log/')[1];
     }
 }

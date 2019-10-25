@@ -12,7 +12,9 @@ use GhoSter\AutoInstagramPost\Model\Config as InstagramConfig;
  */
 class BuilderPlugin
 {
-
+    /**
+     * Menu Id
+     */
     const MENU_MANAGE_ID = 'GhoSter_AutoInstagramPost::manage_product';
 
     /**

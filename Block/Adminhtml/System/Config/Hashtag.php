@@ -18,25 +18,6 @@ class Hashtag extends AbstractFieldArray
     protected $_activation;
 
     /**
-     * Get activation options.
-     *
-     * @return Activation
-     * @throws \Magento\Framework\Exception\LocalizedException
-     */
-    protected function _getActivationRenderer()
-    {
-        if (!$this->_activation) {
-            $this->_activation = $this->getLayout()->createBlock(
-                Activation::class,
-                '',
-                ['data' => ['is_render_to_js_template' => true]]
-            );
-        }
-
-        return $this->_activation;
-    }
-
-    /**
      * @throws \Magento\Framework\Exception\LocalizedException
      */
     protected function _prepareToRender()
@@ -57,6 +38,25 @@ class Hashtag extends AbstractFieldArray
         );
         $this->_addAfter = false;
         $this->_addButtonLabel = __('Add More Hashtag');
+    }
+
+    /**
+     * Get activation options.
+     *
+     * @return Activation
+     * @throws \Magento\Framework\Exception\LocalizedException
+     */
+    protected function _getActivationRenderer()
+    {
+        if (!$this->_activation) {
+            $this->_activation = $this->getLayout()->createBlock(
+                Activation::class,
+                '',
+                ['data' => ['is_render_to_js_template' => true]]
+            );
+        }
+
+        return $this->_activation;
     }
 
     /**
