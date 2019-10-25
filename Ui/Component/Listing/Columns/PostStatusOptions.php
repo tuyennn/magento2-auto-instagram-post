@@ -1,4 +1,5 @@
 <?php
+
 namespace GhoSter\AutoInstagramPost\Ui\Component\Listing\Columns;
 
 use Magento\Ui\Component\Listing\Columns\Column;

@@ -34,6 +34,9 @@ class ImageProcessor
     /** @var DriverFile */
     private $driverFile;
 
+    /**
+     * @var bool
+     */
     protected $productHasImage = false;
 
     /**

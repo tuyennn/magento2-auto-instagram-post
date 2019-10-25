@@ -107,7 +107,7 @@ class Config
             return false;
         }
 
-        return (bool)$this->scopeConfig->getValue(
+        return $this->scopeConfig->isSetFlag(
             static::XML_PATH_ENABLED_MODULE,
             ScopeInterface::SCOPE_STORE,
             $store
@@ -210,11 +210,11 @@ class Config
      * Check if Hashtag was enabled
      *
      * @param null $store
-     * @return mixed
+     * @return bool
      */
     public function isEnableHashtag($store = null)
     {
-        return (bool)$this->scopeConfig->getValue(
+        return $this->scopeConfig->isSetFlag(
             self::XML_PATH_COMMENT_ENABLED,
             ScopeInterface::SCOPE_STORE,
             $store
@@ -224,11 +224,11 @@ class Config
     /**
      * Check if Hashtag follows Parent Category
      * @param null $store
-     * @return mixed
+     * @return bool
      */
     public function isEnableCategoryHashtag($store = null)
     {
-        return (bool)$this->scopeConfig->getValue(
+        return $this->scopeConfig->isSetFlag(
             self::XML_PATH_COMMENT_CATEGORY_HASHTAG,
             ScopeInterface::SCOPE_STORE,
             $store
@@ -239,11 +239,11 @@ class Config
      * Check if Custom Hashtag was enabled
      *
      * @param null $store
-     * @return mixed
+     * @return bool
      */
     public function isEnableCustomHashtag($store = null)
     {
-        return (bool)$this->scopeConfig->getValue(
+        return $this->scopeConfig->isSetFlag(
             self::XML_PATH_COMMENT_CUSTOM_HASHTAG_ENABLED,
             ScopeInterface::SCOPE_STORE,
             $store
@@ -254,11 +254,11 @@ class Config
      * Check if Caption included Product Desc
      *
      * @param null $store
-     * @return mixed
+     * @return bool
      */
     public function isEnableProductDescription($store = null)
     {
-        return (bool)$this->scopeConfig->getValue(
+        return $this->scopeConfig->isSetFlag(
             self::XML_PATH_COMMENT_PRODUCT_DESCRIPTION,
             ScopeInterface::SCOPE_STORE,
             $store
@@ -309,15 +309,22 @@ class Config
         ));
     }
 
+    /**
+     * @param null $store
+     * @return bool
+     */
     public function isCronEnabled($store = null)
     {
-        return (bool)($this->scopeConfig->getValue(
+        return $this->scopeConfig->isSetFlag(
             self::XML_PATH_CRON_ENABLED,
             ScopeInterface::SCOPE_STORE,
             $store
-        ));
+        );
     }
 
+    /**
+     * @return mixed
+     */
     public function getCronTime()
     {
         return $this->scopeConfig->getValue(
@@ -326,6 +333,9 @@ class Config
         );
     }
 
+    /**
+     * @return mixed
+     */
     public function getCronFreq()
     {
         return $this->scopeConfig->getValue(
@@ -334,6 +344,9 @@ class Config
         );
     }
 
+    /**
+     * @return mixed
+     */
     public function getCronLimit()
     {
         return $this->scopeConfig->getValue(

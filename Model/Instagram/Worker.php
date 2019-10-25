@@ -52,8 +52,14 @@ class Worker implements WorkerInterface
      */
     protected $account = [];
 
+    /**
+     * @var bool
+     */
     protected $isLoggedIn = false;
 
+    /**
+     * @var bool
+     */
     protected $recordLog = true;
 
     /**
@@ -91,6 +97,63 @@ class Worker implements WorkerInterface
     }
 
     /**
+     * Set Instagram User
+     */
+    public function setInstagramUser()
+    {
+        if (!empty($this->account)
+            && isset($this->account['username'])
+            && isset($this->account['password'])) {
+            $this->getInstagram()
+                ->setUser($this->account['username'], $this->account['password']);
+        }
+    }
+
+    /**
+     * @return Instagram
+     */
+    public function getInstagram(): Instagram
+    {
+        return $this->instagram;
+    }
+
+    /**
+     * Do login
+     *
+     * @throws \Exception
+     */
+    public function loginInstagram()
+    {
+        if (!$this->isLoggedIn) {
+            $this->isLoggedIn = $this->getInstagram()->login();
+        }
+
+        return $this->isLoggedIn;
+    }
+
+    /**
+     *
+     *
+     * @param ProductCollection $collection
+     * @return array
+     * @throws \Magento\Framework\Exception\FileSystemException
+     */
+    public function postInstagramByProductCollection(ProductCollection $collection)
+    {
+        $results = [];
+
+        foreach ($collection as $product) {
+            $result = $this->postInstagramByProduct($product);
+
+            if (!empty($result)) {
+                $results[] = $result;
+            }
+        }
+
+        return $results;
+    }
+
+    /**
      *
      * Post to instagram by Product
      *
@@ -125,55 +188,6 @@ class Worker implements WorkerInterface
     }
 
     /**
-     *
-     *
-     * @param ProductCollection $collection
-     * @return array
-     * @throws \Magento\Framework\Exception\FileSystemException
-     */
-    public function postInstagramByProductCollection(ProductCollection $collection)
-    {
-        $results = [];
-
-        foreach ($collection as $product) {
-            $result = $this->postInstagramByProduct($product);
-
-            if (!empty($result)) {
-                $results[] = $result;
-            }
-        }
-
-        return $results;
-    }
-
-    /**
-     * Set Instagram User
-     */
-    public function setInstagramUser()
-    {
-        if (!empty($this->account)
-            && isset($this->account['username'])
-            && isset($this->account['password'])) {
-            $this->getInstagram()
-                ->setUser($this->account['username'], $this->account['password']);
-        }
-    }
-
-    /**
-     * Do login
-     *
-     * @throws \Exception
-     */
-    public function loginInstagram()
-    {
-        if (!$this->isLoggedIn) {
-            $this->isLoggedIn = $this->getInstagram()->login();
-        }
-
-        return $this->isLoggedIn;
-    }
-
-    /**
      * @param $result
      * @param $product
      * @throws \Exception
@@ -193,13 +207,5 @@ class Worker implements WorkerInterface
                 InstagramItem::TYPE_SUCCESS
             );
         }
-    }
-
-    /**
-     * @return Instagram
-     */
-    public function getInstagram(): Instagram
-    {
-        return $this->instagram;
     }
 }
