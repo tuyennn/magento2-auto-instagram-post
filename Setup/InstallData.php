@@ -26,16 +26,9 @@ class InstallData implements InstallDataInterface
     const GROUP_NAME = 'Auto Instagram Post';
 
     /**
-     * Attribute code
+     * Attribute code of product
      */
     const ATTRIBUTE_CODE = 'posted_to_instagram';
-
-    /**
-     * EAV setup factory
-     *
-     * @var EavSetupFactory
-     */
-    private $eavSetupFactory;
 
     /**
      * @var AttributeFactory
@@ -61,6 +54,13 @@ class InstallData implements InstallDataInterface
      * @var AttributeManagement
      */
     protected $attributeManagement;
+
+    /**
+     * EAV setup factory
+     *
+     * @var EavSetupFactory
+     */
+    private $eavSetupFactory;
 
     /**
      * InstallData constructor.
