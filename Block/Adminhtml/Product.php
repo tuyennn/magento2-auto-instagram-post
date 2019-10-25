@@ -47,6 +47,16 @@ class Product extends \Magento\Backend\Block\Widget\Container
     }
 
     /**
+     * Check whether it is single store mode
+     *
+     * @return bool
+     */
+    public function isSingleStoreMode()
+    {
+        return $this->_storeManager->isSingleStoreMode();
+    }
+
+    /**
      * Prepare button and grid
      *
      * @return \Magento\Catalog\Block\Adminhtml\Product
@@ -105,15 +115,5 @@ class Product extends \Magento\Backend\Block\Widget\Container
             'catalog/*/new',
             ['set' => $this->_productFactory->create()->getDefaultAttributeSetId(), 'type' => $type]
         );
-    }
-
-    /**
-     * Check whether it is single store mode
-     *
-     * @return bool
-     */
-    public function isSingleStoreMode()
-    {
-        return $this->_storeManager->isSingleStoreMode();
     }
 }

@@ -37,12 +37,6 @@ class Data extends AbstractHelper
     /** @var Filesystem */
     protected $filesystem;
 
-    /** @var DriverFile */
-    private $driverFile;
-
-    /** @var FileMime */
-    private $fileMime;
-
     /** @var \Magento\Framework\Image\AdapterFactory */
     protected $imageFactory;
 
@@ -54,6 +48,12 @@ class Data extends AbstractHelper
 
     /** @var InstagramConfig */
     protected $config;
+
+    /** @var DriverFile */
+    private $driverFile;
+
+    /** @var FileMime */
+    private $fileMime;
 
     /**
      * Data constructor.
@@ -255,58 +255,6 @@ class Data extends AbstractHelper
     }
 
     /**
-     * Get Category Tags
-     *
-     * @param $product Product
-     * @return string
-     */
-    public function getCategoriesHashtagsHtml($product)
-    {
-        $html = '';
-
-        $hashTagsStrippedData = [];
-
-        if ($this->config->isEnableCategoryHashtag() && $this->config->isEnableHashtag()) {
-
-            try {
-
-                /** @var $collection CategoryCollection */
-                $collection = $this->categoryCollectionFactory->create();
-                $collection->addAttributeToFilter('entity_id', $product->getCategoryIds());
-                $collection->addNameToResult();
-
-                $i = 1;
-                foreach ($collection as $category) {
-                    $hashTagsStrippedData[] = strtolower(preg_replace('/\s+/', '', $category->getName()));
-                    if ($i++ == self::DEFAULT_CATEGORY_HASHTAG_LIMIT) {
-                        break;
-                    }
-                }
-
-            } catch (\Exception $e) {
-                $this->_logger->error($e->getMessage());
-            }
-        }
-
-        if (!empty($hashTagsStrippedData)) {
-            foreach ($hashTagsStrippedData as $hashTag) {
-                $html .= '#' . $hashTag . self::SPACE_STRING;
-            }
-        }
-
-        return $html;
-    }
-
-    /**
-     * @param $product Product
-     * @return string
-     */
-    public function getProductDescription($product)
-    {
-        return strip_tags($product->getDescription());
-    }
-
-    /**
      * Get Final Caption for Instagram Post
      *
      * @param $product Product
@@ -370,5 +318,57 @@ class Data extends AbstractHelper
         }
 
         return $html;
+    }
+
+    /**
+     * Get Category Tags
+     *
+     * @param $product Product
+     * @return string
+     */
+    public function getCategoriesHashtagsHtml($product)
+    {
+        $html = '';
+
+        $hashTagsStrippedData = [];
+
+        if ($this->config->isEnableCategoryHashtag() && $this->config->isEnableHashtag()) {
+
+            try {
+
+                /** @var $collection CategoryCollection */
+                $collection = $this->categoryCollectionFactory->create();
+                $collection->addAttributeToFilter('entity_id', $product->getCategoryIds());
+                $collection->addNameToResult();
+
+                $i = 1;
+                foreach ($collection as $category) {
+                    $hashTagsStrippedData[] = strtolower(preg_replace('/\s+/', '', $category->getName()));
+                    if ($i++ == self::DEFAULT_CATEGORY_HASHTAG_LIMIT) {
+                        break;
+                    }
+                }
+
+            } catch (\Exception $e) {
+                $this->_logger->error($e->getMessage());
+            }
+        }
+
+        if (!empty($hashTagsStrippedData)) {
+            foreach ($hashTagsStrippedData as $hashTag) {
+                $html .= '#' . $hashTag . self::SPACE_STRING;
+            }
+        }
+
+        return $html;
+    }
+
+    /**
+     * @param $product Product
+     * @return string
+     */
+    public function getProductDescription($product)
+    {
+        return strip_tags($product->getDescription());
     }
 }

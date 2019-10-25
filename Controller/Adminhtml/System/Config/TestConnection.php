@@ -93,7 +93,7 @@ class TestConnection extends Action
 
                 $responseData = [
                     'success' => $status,
-                    'message' => $status ? __('Connection Success') :__('Unauthorized Instagram Account, check your user/password settings')
+                    'message' => $status ? __('Connection Success') : __('Unauthorized Instagram Account, check your user/password settings')
                 ];
 
             } else {

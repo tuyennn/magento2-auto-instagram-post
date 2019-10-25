@@ -20,8 +20,14 @@ use Magento\Eav\Model\Entity\TypeFactory;
  */
 class InstallData implements InstallDataInterface
 {
-
+    /**
+     * Group Name of Attribute
+     */
     const GROUP_NAME = 'Auto Instagram Post';
+
+    /**
+     * Attribute code
+     */
     const ATTRIBUTE_CODE = 'posted_to_instagram';
 
     /**

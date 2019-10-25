@@ -30,17 +30,6 @@ class TestConnection extends Field
     }
 
     /**
-     * Return element html
-     *
-     * @param AbstractElement $element
-     * @return string
-     */
-    protected function _getElementHtml(AbstractElement $element)
-    {
-        return $this->_toHtml();
-    }
-
-    /**
      * Return ajax url for collect button
      *
      * @return string
@@ -74,5 +63,16 @@ class TestConnection extends Field
         );
 
         return $button->toHtml();
+    }
+
+    /**
+     * Return element html
+     *
+     * @param AbstractElement $element
+     * @return string
+     */
+    protected function _getElementHtml(AbstractElement $element)
+    {
+        return $this->_toHtml();
     }
 }
