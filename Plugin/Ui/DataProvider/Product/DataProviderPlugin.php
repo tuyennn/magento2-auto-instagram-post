@@ -7,6 +7,8 @@ use Magento\Framework\Api\Filter;
 use GhoSter\AutoInstagramPost\Ui\DataProvider\Product\DataProvider;
 
 /**
+ * Data Provider for Grid
+ *
  * Class DataProviderPlugin
  */
 class DataProviderPlugin

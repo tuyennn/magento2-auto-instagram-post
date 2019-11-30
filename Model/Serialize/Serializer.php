@@ -3,6 +3,8 @@
 namespace GhoSter\AutoInstagramPost\Model\Serialize;
 
 /**
+ * Serializer for deprecated Magento version
+ *
  * Class Serializer
  */
 //@codingStandardsIgnoreFile

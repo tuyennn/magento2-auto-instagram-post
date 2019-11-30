@@ -6,6 +6,8 @@ use Magento\Config\Block\System\Config\Form\Field\FieldArray\AbstractFieldArray;
 use GhoSter\AutoInstagramPost\Block\Adminhtml\System\Config\Hashtag\Activation;
 
 /**
+ * Hashtag Field
+ *
  * Class Hashtag
  */
 class Hashtag extends AbstractFieldArray

@@ -14,6 +14,8 @@ use GhoSter\AutoInstagramPost\Model\Config as InstagramConfig;
 use GhoSter\AutoInstagramPost\Helper\Data as InstagramHelper;
 
 /**
+ * Observer for Product
+ *
  * Class ProductSaveAfter
  */
 class ProductSaveAfter implements ObserverInterface

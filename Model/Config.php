@@ -14,6 +14,8 @@ use GhoSter\AutoInstagramPost\Model\Config\Backend\Image as InstagramDefaultImag
 use GhoSter\AutoInstagramPost\Model\Serialize\Serializer;
 
 /**
+ * AutoInstagramPost Config
+ *
  * Class Config
  */
 class Config

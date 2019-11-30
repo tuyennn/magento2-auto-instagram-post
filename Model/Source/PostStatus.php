@@ -7,6 +7,8 @@ use Magento\Eav\Model\Entity\Attribute\Source\SourceInterface;
 use Magento\Framework\Data\OptionSourceInterface;
 
 /**
+ * Source PostStatus
+ *
  * Class PostStatus
  */
 class PostStatus extends AbstractSource implements SourceInterface, OptionSourceInterface

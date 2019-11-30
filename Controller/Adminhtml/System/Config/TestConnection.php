@@ -11,6 +11,8 @@ use GhoSter\AutoInstagramPost\Model\Config as InstagramConfig;
 use Psr\Log\LoggerInterface;
 
 /**
+ * Test Connection Controller
+ *
  * Class TestConnection
  */
 class TestConnection extends Action
@@ -92,7 +94,9 @@ class TestConnection extends Action
 
                 $responseData = [
                     'success' => $status,
-                    'message' => $status ? __('Connection Success') : __('Unauthorized Instagram Account, check your user/password settings')
+                    'message' => $status
+                        ? __('Connection Success')
+                        : __('Unauthorized Instagram Account, check your user/password settings')
                 ];
 
             } else {

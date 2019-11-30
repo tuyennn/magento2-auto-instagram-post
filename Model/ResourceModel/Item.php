@@ -7,6 +7,8 @@ use Magento\Framework\Model\ResourceModel\Db\AbstractDb;
 use Magento\Framework\Stdlib\DateTime\DateTime;
 
 /**
+ * Instagram Item ResourceModel
+ *
  * Class Item
  */
 class Item extends AbstractDb

@@ -5,6 +5,8 @@ namespace GhoSter\AutoInstagramPost\Block\Adminhtml;
 use Magento\Eav\Setup\EavSetup;
 
 /**
+ * Product Widget Container
+ *
  * Class Product
  */
 class Product extends \Magento\Backend\Block\Widget\Container

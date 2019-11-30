@@ -7,6 +7,8 @@ use Magento\Framework\View\Element\Html\Select;
 use Magento\Config\Model\Config\Source\Enabledisable;
 
 /**
+ * Activation Select Element
+ *
  * Class Activation
  */
 class Activation extends Select

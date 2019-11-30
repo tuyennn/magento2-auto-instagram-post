@@ -9,6 +9,8 @@ use Magento\Catalog\Controller\Adminhtml\Product\Builder as ProductBuilder;
 use Magento\Backend\Model\View\Result\Page;
 
 /**
+ * Manager Index Controller
+ *
  * Class Index
  */
 class Index extends ProductController

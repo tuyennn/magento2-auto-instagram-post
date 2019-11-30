@@ -7,6 +7,8 @@ use Magento\Catalog\Model\Product;
 use GhoSter\AutoInstagramPost\Model\ItemFactory;
 
 /**
+ * Logger for AutoInstagramPost
+ *
  * Class Logger
  */
 class Logger

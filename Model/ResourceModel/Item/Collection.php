@@ -5,6 +5,8 @@ namespace GhoSter\AutoInstagramPost\Model\ResourceModel\Item;
 use Magento\Framework\Model\ResourceModel\Db\Collection\AbstractCollection;
 
 /**
+ * Instagram Item Collection
+ *
  * Class Collection
  */
 class Collection extends AbstractCollection

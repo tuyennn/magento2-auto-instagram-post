@@ -17,6 +17,8 @@ use Magento\Catalog\Model\ResourceModel\Category\CollectionFactory as CategoryCo
 use GhoSter\AutoInstagramPost\Model\Config as InstagramConfig;
 
 /**
+ * AutoInstagramPost Data Helper
+ *
  * Class Data
  */
 class Data extends AbstractHelper

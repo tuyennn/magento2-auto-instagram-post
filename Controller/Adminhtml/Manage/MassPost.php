@@ -12,6 +12,8 @@ use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory;
 use GhoSter\AutoInstagramPost\Model\Config as InstagramConfig;
 
 /**
+ * Manager MassPost Controller
+ *
  * Class MassPost
  */
 class MassPost extends Action

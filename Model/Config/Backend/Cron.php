@@ -9,6 +9,8 @@ use Magento\Framework\Exception\LocalizedException;
 use GhoSter\AutoInstagramPost\Model\Config as InstagramConfig;
 
 /**
+ * Config Value for Cron
+ *
  * Class Cron
  */
 class Cron extends ConfigValue

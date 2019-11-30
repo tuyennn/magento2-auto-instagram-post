@@ -11,6 +11,8 @@ use GhoSter\AutoInstagramPost\Model\Instagram;
 use GhoSter\AutoInstagramPost\Model\Instagram\Worker as InstagramWorker;
 
 /**
+ * Manager Post Controller
+ *
  * Class Post
  */
 class Post extends Action

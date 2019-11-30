@@ -3,6 +3,8 @@
 namespace GhoSter\AutoInstagramPost\Model\Config\Backend;
 
 /**
+ * Config Value for Image
+ *
  * Class Image
  */
 class Image extends \Magento\Config\Model\Config\Backend\Image
