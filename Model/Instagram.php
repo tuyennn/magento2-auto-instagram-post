@@ -24,19 +24,69 @@ class Instagram
     const STATUS_OK = 'ok';
     const STATUS_FAIL = 'fail';
 
-    protected $username;            // Instagram username
-    protected $password;            // Instagram password
-    protected $debug;               // Debug
+    /**
+     * @var string
+     */
+    protected $username;
 
-    protected $uuid;                // UUID
-    protected $deviceId;           // Device ID
-    protected $usernameId;         // Username ID
-    protected $token;               // _csrftoken
-    protected $isLoggedIn = false;  // Session status
-    protected $rankToken;          // Rank token
-    protected $IGDataPath;          // Data storage path
+    /**
+     * @var string
+     */
+    protected $password;
+
+    /**
+     * @var bool
+     */
+    protected $debug;
+
+    /**
+     * @var string
+     */
+    protected $uuid;
+
+    /**
+     * @var string
+     */
+    protected $deviceId;
+
+    /**
+     * @var string
+     */
+    protected $usernameId;
+
+    /**
+     * @var string
+     */
+    protected $token;
+
+    /**
+     * @var bool
+     */
+    protected $isLoggedIn = false;
+
+    /**
+     * @var string
+     */
+    protected $rankToken;
+
+    /**
+     * @var string
+     */
+    protected $IGDataPath;
+
+    /**
+     * @var DirectoryList
+     */
     protected $directoryList;
+
+    /**
+     * @var Config
+     */
     protected $config;
+
+    /**
+     * @var LoggerInterface
+     */
     protected $logger;
 
 
@@ -63,8 +113,8 @@ class Instagram
 
         $this->directoryList = $directoryList;
 
+        $this->debug = $this->config->isDebugEnabled();
         $this->IGDataPath = $this->directoryList->getPath('var') . DIRECTORY_SEPARATOR;
-
     }
 
     public function generateDeviceId()
