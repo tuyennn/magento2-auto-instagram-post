@@ -8,7 +8,6 @@ use GhoSter\AutoInstagramPost\Model\ItemFactory;
 
 /**
  * Class Logger
- * @package GhoSter\AutoInstagramPost\Model
  */
 class Logger
 {

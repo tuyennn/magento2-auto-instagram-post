@@ -8,7 +8,6 @@ use Magento\Framework\Data\OptionSourceInterface;
 
 /**
  * Class PostStatus
- * @package GhoSter\AutoInstagramPost\Model\Source
  */
 class PostStatus extends AbstractSource implements SourceInterface, OptionSourceInterface
 {

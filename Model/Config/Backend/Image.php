@@ -4,7 +4,6 @@ namespace GhoSter\AutoInstagramPost\Model\Config\Backend;
 
 /**
  * Class Image
- * @package GhoSter\AutoInstagramPost\Model\Config\Backend
  */
 class Image extends \Magento\Config\Model\Config\Backend\Image
 {

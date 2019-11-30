@@ -8,7 +8,6 @@ use Magento\Framework\Stdlib\DateTime\DateTime;
 
 /**
  * Class Item
- * @package GhoSter\AutoInstagramPost\Model\ResourceModel
  */
 class Item extends AbstractDb
 {

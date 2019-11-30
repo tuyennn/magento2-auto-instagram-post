@@ -8,7 +8,6 @@ use Magento\Framework\Data\Form\Element\AbstractElement;
 
 /**
  * Class TestConnection
- * @package GhoSter\AutoInstagramPost\Block\Adminhtml\System\Config
  */
 class TestConnection extends Field
 {

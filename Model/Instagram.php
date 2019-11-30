@@ -10,8 +10,6 @@ use Psr\Log\LoggerInterface;
  * Class Instagram
  *
  * Rewrite Code From : https://github.com/mgp25/Instagram-API
- *
- * @package GhoSter\AutoInstagramPost\Model
  */
 //@codingStandardsIgnoreFile
 class Instagram

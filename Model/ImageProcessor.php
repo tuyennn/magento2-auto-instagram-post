@@ -11,7 +11,6 @@ use GhoSter\AutoInstagramPost\Model\Config as InstagramConfig;
 
 /**
  * Class ImageProcessor
- * @package GhoSter\AutoInstagramPost\Model
  */
 class ImageProcessor
 {

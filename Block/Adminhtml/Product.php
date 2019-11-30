@@ -6,7 +6,6 @@ use Magento\Eav\Setup\EavSetup;
 
 /**
  * Class Product
- * @package GhoSter\AutoInstagramPost\Block\Adminhtml
  */
 class Product extends \Magento\Backend\Block\Widget\Container
 {

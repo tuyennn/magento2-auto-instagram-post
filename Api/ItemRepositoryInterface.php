@@ -5,6 +5,9 @@ namespace GhoSter\AutoInstagramPost\Api;
 use Magento\Framework\Api\SearchCriteriaInterface;
 use GhoSter\AutoInstagramPost\Api\Data\ItemInterface;
 
+/**
+ * Interface ItemRepositoryInterface
+ */
 interface ItemRepositoryInterface
 {
 

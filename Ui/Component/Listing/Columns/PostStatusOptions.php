@@ -6,9 +6,8 @@ use Magento\Ui\Component\Listing\Columns\Column;
 
 /**
  * Class PostStatusOptions
- * @package GhoSter\AutoInstagramPost\Ui\Component\Listing\Columns
+ * @codeCoverageIgnore
  */
-// @codingStandardsIgnoreFile
 class PostStatusOptions extends Column
 {
 

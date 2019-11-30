@@ -12,7 +12,6 @@ use Psr\Log\LoggerInterface;
 
 /**
  * Class TestConnection
- * @package GhoSter\AutoInstagramPost\Controller\Adminhtml\System\Config
  */
 class TestConnection extends Action
 {

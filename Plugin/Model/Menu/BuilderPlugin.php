@@ -8,7 +8,6 @@ use GhoSter\AutoInstagramPost\Model\Config as InstagramConfig;
 
 /**
  * Class BuilderPlugin
- * @package GhoSter\AutoInstagramPost\Plugin\Model\Menu
  */
 class BuilderPlugin
 {

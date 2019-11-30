@@ -18,7 +18,6 @@ use GhoSter\AutoInstagramPost\Model\Config as InstagramConfig;
 
 /**
  * Class Data
- * @package GhoSter\AutoInstagramPost\Helper
  */
 class Data extends AbstractHelper
 {
@@ -265,7 +264,7 @@ class Data extends AbstractHelper
         $html = '';
         $stringTemplate = $this->config->getInstagramPostTemplate();
 
-        if (preg_match_all("~\{\{\s*(.*?)\s*\}\}~", $stringTemplate, $matches)) {
+        if (preg_match_all("~{{\s*(.*?)\s*}}~", $stringTemplate, $matches)) {
             if (isset($matches[1]) && is_array($matches[1])) {
                 foreach ($matches[1] as $key => $match) {
                     $addOnSpace = $key !== 0 ? self::SPACE_STRING : '';

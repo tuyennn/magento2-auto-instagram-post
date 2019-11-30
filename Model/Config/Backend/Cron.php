@@ -10,7 +10,6 @@ use GhoSter\AutoInstagramPost\Model\Config as InstagramConfig;
 
 /**
  * Class Cron
- * @package GhoSter\AutoInstagramPost\Model\Config\Backend
  */
 class Cron extends ConfigValue
 {

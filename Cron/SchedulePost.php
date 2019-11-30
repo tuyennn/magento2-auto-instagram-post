@@ -10,7 +10,6 @@ use Psr\Log\LoggerInterface;
 
 /**
  * Class SchedulePost
- * @package GhoSter\AutoInstagramPost\Cron
  */
 class SchedulePost
 {

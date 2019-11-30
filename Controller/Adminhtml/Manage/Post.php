@@ -12,7 +12,6 @@ use GhoSter\AutoInstagramPost\Model\Instagram\Worker as InstagramWorker;
 
 /**
  * Class Post
- * @package GhoSter\AutoInstagramPost\Controller\Adminhtml\Manage
  */
 class Post extends Action
 {

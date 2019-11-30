@@ -8,7 +8,6 @@ use GhoSter\AutoInstagramPost\Ui\DataProvider\Product\DataProvider;
 
 /**
  * Class DataProviderPlugin
- * @package GhoSter\AutoInstagramPost\Plugin\Ui\DataProvider\Product
  */
 class DataProviderPlugin
 {

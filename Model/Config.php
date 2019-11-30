@@ -15,7 +15,6 @@ use GhoSter\AutoInstagramPost\Model\Serialize\Serializer;
 
 /**
  * Class Config
- * @package GhoSter\AutoInstagramPost\Model
  */
 class Config
 {

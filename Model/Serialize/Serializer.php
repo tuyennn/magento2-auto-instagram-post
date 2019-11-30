@@ -4,7 +4,6 @@ namespace GhoSter\AutoInstagramPost\Model\Serialize;
 
 /**
  * Class Serializer
- * @package GhoSter\AutoInstagramPost\Model\Serialize
  */
 //@codingStandardsIgnoreFile
 class Serializer

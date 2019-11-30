@@ -7,7 +7,6 @@ use GhoSter\AutoInstagramPost\Block\Adminhtml\System\Config\Hashtag\Activation;
 
 /**
  * Class Hashtag
- * @package GhoSter\AutoInstagramPost\Block\Adminhtml\System\Config
  */
 class Hashtag extends AbstractFieldArray
 {

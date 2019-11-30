@@ -7,7 +7,6 @@ use GhoSter\AutoInstagramPost\Api\Data\ItemInterface;
 
 /**
  * Class Item
- * @package GhoSter\AutoInstagramPost\Model
  */
 class Item extends AbstractModel implements ItemInterface
 {

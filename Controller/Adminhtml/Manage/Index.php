@@ -10,7 +10,6 @@ use Magento\Backend\Model\View\Result\Page;
 
 /**
  * Class Index
- * @package GhoSter\AutoInstagramPost\Controller\Adminhtml\Manage
  */
 class Index extends ProductController
 {
