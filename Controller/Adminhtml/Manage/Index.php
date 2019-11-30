@@ -9,8 +9,9 @@ use Magento\Catalog\Controller\Adminhtml\Product\Builder as ProductBuilder;
 use Magento\Backend\Model\View\Result\Page;
 
 /**
+ * Manager Index Controller
+ *
  * Class Index
- * @package GhoSter\AutoInstagramPost\Controller\Adminhtml\Manage
  */
 class Index extends ProductController
 {

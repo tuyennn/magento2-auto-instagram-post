@@ -7,8 +7,9 @@ use Magento\Config\Block\System\Config\Form\Field;
 use Magento\Framework\Data\Form\Element\AbstractElement;
 
 /**
+ * TestConnection Field
+ *
  * Class TestConnection
- * @package GhoSter\AutoInstagramPost\Block\Adminhtml\System\Config
  */
 class TestConnection extends Field
 {

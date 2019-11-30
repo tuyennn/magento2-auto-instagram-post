@@ -9,8 +9,9 @@ use GhoSter\AutoInstagramPost\Model\Config as InstagramConfig;
 use Psr\Log\LoggerInterface;
 
 /**
+ * Cron for SchedulePost
+ *
  * Class SchedulePost
- * @package GhoSter\AutoInstagramPost\Cron
  */
 class SchedulePost
 {

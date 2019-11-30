@@ -8,6 +8,8 @@ use Magento\Framework\View\Element\UiComponentFactory;
 use GhoSter\AutoInstagramPost\Model\Config as InstagramConfig;
 
 /**
+ * Product Actions Renderer
+ *
  * Class ProductActions
  *
  * @api
@@ -71,7 +73,9 @@ class ProductActions extends \Magento\Catalog\Ui\Component\Listing\Columns\Produ
                         'label' => $item['is_posted_to_instagram'] === true ? __('RePost') : __('Post'),
                         'confirm' => [
                             'title' => __('Post "${ $.$data.name }" to Instagram'),
-                            'message' => $item['is_posted_to_instagram'] === true ? __('Are you sure you wan\'t to re-post this product to Instagram?') : __('Are you sure you wan\'t to post this product to Instagram?')
+                            'message' => $item['is_posted_to_instagram'] === true
+                                ? __('Are you sure you wan\'t to re-post this product to Instagram?')
+                                : __('Are you sure you wan\'t to post this product to Instagram?')
                         ],
                         'hidden' => false,
                     ];

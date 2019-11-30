@@ -5,8 +5,9 @@ namespace GhoSter\AutoInstagramPost\Model\Config\Backend;
 use Magento\Config\Model\Config\Backend\Serialized\ArraySerialized;
 
 /**
+ * Config Value for Hashtag
+ *
  * Class Hashtag
- * @package GhoSter\AutoInstagramPost\Model\Config\Backend
  */
 class Hashtag extends ArraySerialized
 {

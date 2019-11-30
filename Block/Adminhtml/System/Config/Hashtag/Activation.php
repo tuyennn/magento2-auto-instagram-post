@@ -7,8 +7,9 @@ use Magento\Framework\View\Element\Html\Select;
 use Magento\Config\Model\Config\Source\Enabledisable;
 
 /**
+ * Activation Select Element
+ *
  * Class Activation
- * @package GhoSter\AutoInstagramPost\Block\Adminhtml\System\Config\Hashtag
  */
 class Activation extends Select
 {

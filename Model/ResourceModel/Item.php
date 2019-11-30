@@ -7,8 +7,9 @@ use Magento\Framework\Model\ResourceModel\Db\AbstractDb;
 use Magento\Framework\Stdlib\DateTime\DateTime;
 
 /**
+ * Instagram Item ResourceModel
+ *
  * Class Item
- * @package GhoSter\AutoInstagramPost\Model\ResourceModel
  */
 class Item extends AbstractDb
 {

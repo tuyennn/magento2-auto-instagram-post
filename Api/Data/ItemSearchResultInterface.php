@@ -4,6 +4,9 @@ namespace GhoSter\AutoInstagramPost\Api\Data;
 
 use Magento\Framework\Api\SearchResultsInterface;
 
+/**
+ * Interface ItemSearchResultInterface
+ */
 interface ItemSearchResultInterface extends SearchResultsInterface
 {
 

@@ -10,8 +10,9 @@ use GhoSter\AutoInstagramPost\Helper\Data as InstagramHelper;
 use GhoSter\AutoInstagramPost\Model\Config as InstagramConfig;
 
 /**
+ * AutoInstagramPost ImageProcessor
+ *
  * Class ImageProcessor
- * @package GhoSter\AutoInstagramPost\Model
  */
 class ImageProcessor
 {

@@ -55,6 +55,10 @@
                         <field id="enabled">1</field>
                     </depends>
                 </field>
+                <field id="enable_debug" translate="label" type="select" sortOrder="60" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Enable Debug</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
             </group>
             <group id="comment_hashtag" translate="label" sortOrder="20" showInDefault="1" showInWebsite="0" showInStore="0">
                 <label>Images Description Settings</label>

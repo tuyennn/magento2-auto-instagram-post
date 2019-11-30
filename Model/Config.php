@@ -14,8 +14,9 @@ use GhoSter\AutoInstagramPost\Model\Config\Backend\Image as InstagramDefaultImag
 use GhoSter\AutoInstagramPost\Model\Serialize\Serializer;
 
 /**
+ * AutoInstagramPost Config
+ *
  * Class Config
- * @package GhoSter\AutoInstagramPost\Model
  */
 class Config
 {
@@ -24,6 +25,7 @@ class Config
     const XML_PATH_INSTAGRAM_PASSWORD = 'auto_instagram_post/general/password';
     const XML_PATH_DEFAULT_IMAGE = 'auto_instagram_post/general/upload_image_id';
     const XML_PATH_ENABLE_OBSERVER = 'auto_instagram_post/general/enabled_observer';
+    const XML_PATH_ENABLE_DEBUG = 'auto_instagram_post/general/enable_debug';
 
     const XML_PATH_COMMENT_ENABLED = 'auto_instagram_post/comment_hashtag/enabled';
     const XML_PATH_COMMENT_PRODUCT_DESCRIPTION = 'auto_instagram_post/comment_hashtag/product_description';
@@ -184,11 +186,9 @@ class Config
             return '';
         }
 
-        $imagePath = $this->directoryList->getPath('media')
+        return $this->directoryList->getPath('media')
             . DIRECTORY_SEPARATOR . $uploadDir
             . DIRECTORY_SEPARATOR . $image;
-
-        return $imagePath;
     }
 
     /**
@@ -199,8 +199,21 @@ class Config
      */
     public function isObserverEnabled($store = null)
     {
-        return (bool)$this->scopeConfig->getValue(
+        return $this->scopeConfig->isSetFlag(
             self::XML_PATH_ENABLE_OBSERVER,
+            ScopeInterface::SCOPE_STORE,
+            $store
+        );
+    }
+
+    /**
+     * @param null $store
+     * @return bool
+     */
+    public function isDebugEnabled($store = null)
+    {
+        return $this->scopeConfig->isSetFlag(
+            self::XML_PATH_ENABLE_DEBUG,
             ScopeInterface::SCOPE_STORE,
             $store
         );
