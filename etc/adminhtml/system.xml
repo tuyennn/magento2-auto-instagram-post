@@ -24,6 +24,7 @@
                 </field>
                 <field id="password" translate="label" type="password" sortOrder="20" showInDefault="1" showInWebsite="0" showInStore="0">
                     <label>Password</label>
+                    <frontend_class>required-entry</frontend_class>
                     <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
                     <depends>
                         <field id="enabled">1</field>
