@@ -94,7 +94,6 @@ class Instagram
      */
     protected $logger;
 
-
     /**
      * Default class constructor.
      *
@@ -132,7 +131,6 @@ class Instagram
         $megaRandomHash = md5(number_format(microtime(true), 7, '', ''));
         return 'android-' . substr($megaRandomHash, 16);
     }
-
 
     /**
      * Set the user. Manage multiple accounts.
@@ -191,7 +189,6 @@ class Instagram
      */
     public function isLoggedIn()
     {
-
         $account = $this->config->getAccountInformation();
         $username = isset($account['username']) ? ($account['username']) : null;
 
@@ -328,7 +325,6 @@ class Instagram
             if (!empty($post)) {
                 if (!is_array($post)) {
                     $this->logger->critical('DATA: ' . urldecode($post) . "\n");
-
                 }
             }
             $this->logger->critical("RESPONSE: $body\n\n");
@@ -395,7 +391,6 @@ class Instagram
         return $logout === self::STATUS_OK;
     }
 
-
     /**
      * Upload photo to Instagram.
      *
@@ -429,7 +424,6 @@ class Instagram
                 ['lib_name' => 'moz', 'lib_version' => '3.1.m', 'quality' => '80']
             )
         ];
-
 
         $headers = [
             'Accept-Encoding: gzip',
@@ -516,6 +510,8 @@ class Instagram
 
             return $this->createIconGD($preview);
         }
+
+        return false;
     }
 
     /**
