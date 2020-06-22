@@ -5,6 +5,9 @@ namespace GhoSter\AutoInstagramPost\Api;
 use Magento\Catalog\Model\Product;
 use Magento\Catalog\Model\ResourceModel\Product\Collection as ProductCollection;
 
+/**
+ * Interface WorkerInterface
+ */
 interface WorkerInterface
 {
 

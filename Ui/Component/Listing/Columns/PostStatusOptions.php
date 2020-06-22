@@ -5,10 +5,11 @@ namespace GhoSter\AutoInstagramPost\Ui\Component\Listing\Columns;
 use Magento\Ui\Component\Listing\Columns\Column;
 
 /**
+ * PostStatusOptions Renderer
+ *
  * Class PostStatusOptions
- * @package GhoSter\AutoInstagramPost\Ui\Component\Listing\Columns
+ * @codeCoverageIgnore
  */
-// @codingStandardsIgnoreFile
 class PostStatusOptions extends Column
 {
 

@@ -7,8 +7,9 @@ use Magento\Eav\Model\Entity\Attribute\Source\SourceInterface;
 use Magento\Framework\Data\OptionSourceInterface;
 
 /**
+ * Source PostStatus
+ *
  * Class PostStatus
- * @package GhoSter\AutoInstagramPost\Model\Source
  */
 class PostStatus extends AbstractSource implements SourceInterface, OptionSourceInterface
 {

@@ -14,8 +14,9 @@ use GhoSter\AutoInstagramPost\Helper\Data as InstagramHelper;
 use Psr\Log\LoggerInterface;
 
 /**
+ * Instagram Worker
+ *
  * Class Worker
- * @package GhoSter\AutoInstagramPost\Model\Instagram
  */
 class Worker implements WorkerInterface
 {

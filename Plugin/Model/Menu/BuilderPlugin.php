@@ -7,8 +7,9 @@ use Magento\Backend\Model\Menu;
 use GhoSter\AutoInstagramPost\Model\Config as InstagramConfig;
 
 /**
+ * Plugin for Menu
+ *
  * Class BuilderPlugin
- * @package GhoSter\AutoInstagramPost\Plugin\Model\Menu
  */
 class BuilderPlugin
 {

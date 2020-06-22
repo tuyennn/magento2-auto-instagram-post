@@ -6,8 +6,9 @@ use Magento\Framework\Model\AbstractModel;
 use GhoSter\AutoInstagramPost\Api\Data\ItemInterface;
 
 /**
+ * Item Model
+ *
  * Class Item
- * @package GhoSter\AutoInstagramPost\Model
  */
 class Item extends AbstractModel implements ItemInterface
 {
