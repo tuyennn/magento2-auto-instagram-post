@@ -10,7 +10,9 @@ use Psr\Log\LoggerInterface;
 
 /**
  * Class Instagram API to communicate with Instagram
+ * @SuppressWarnings(PHPMD.TooManyFields)
  * @SuppressWarnings(PHPMD.CouplingBetweenObjects)
+ * @SuppressWarnings(PHPMD.ExcessiveClassComplexity)
  * @SuppressWarnings(PHPCS.Magento2.Files.LineLength.MaxExceeded)
  */
 class Instagram
