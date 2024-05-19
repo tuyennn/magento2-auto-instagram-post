@@ -1,3 +1,5 @@
+# This project was no longer maintained
+
 # Auto Instagram Post - Magento 2
 ---
 
